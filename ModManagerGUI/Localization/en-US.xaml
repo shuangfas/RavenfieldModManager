@@ -1,0 +1,58 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- Navigation -->
+    <sys:String x:Key="Nav.Mods">Mods</sys:String>
+    <sys:String x:Key="Nav.Playlist">Playlists</sys:String>
+    <sys:String x:Key="Nav.Tools">Tools</sys:String>
+
+    <!-- Top bar -->
+    <sys:String x:Key="Top.ManageCategories">Manage Categories</sys:String>
+    <sys:String x:Key="Top.Filter">Filter</sys:String>
+    <sys:String x:Key="Top.CategoryHint">Categorize</sys:String>
+    <sys:String x:Key="Top.NoCategory">No categories</sys:String>
+    <sys:String x:Key="Top.LoadOrder">Load order</sys:String>
+
+    <!-- Sort options -->
+    <sys:String x:Key="Sort.Current">Current order</sys:String>
+    <sys:String x:Key="Sort.Name">Name</sys:String>
+    <sys:String x:Key="Sort.UpdateTime">Update time</sys:String>
+    <sys:String x:Key="Sort.DownloadDate">Download date</sys:String>
+
+    <!-- Left panel -->
+    <sys:String x:Key="Left.RecognizedMods">Recognized mods</sys:String>
+    <sys:String x:Key="Left.SearchPlaceholder">Search recognized mods</sys:String>
+
+    <!-- Right detail panel -->
+    <sys:String x:Key="Right.ModDetail">Mod details</sys:String>
+    <sys:String x:Key="Right.NoSelection">No mod selected</sys:String>
+    <sys:String x:Key="Right.ClickHint">Click a mod card on the left to view details</sys:String>
+    <sys:String x:Key="Right.Loading">Loading details…</sys:String>
+    <sys:String x:Key="Right.NoDescription">No description</sys:String>
+    <sys:String x:Key="Right.Playlist">Current playlist mods</sys:String>
+    <sys:String x:Key="Right.SearchPlaylist">Search current playlist</sys:String>
+    <sys:String x:Key="Right.PlaylistEmpty">The current playlist has no mods yet</sys:String>
+
+    <!-- "..." menu -->
+    <sys:String x:Key="Menu.OpenFolder">Open mod folder</sys:String>
+    <sys:String x:Key="Menu.WorkshopPage">Workshop page</sys:String>
+    <sys:String x:Key="Menu.CopyId">Copy mod ID</sys:String>
+
+    <!-- Playlist page -->
+    <sys:String x:Key="Playlist.SelectPlayset">Playlist</sys:String>
+    <sys:String x:Key="Playlist.AddMod">Add mods</sys:String>
+    <sys:String x:Key="Playlist.AddModTitle">All mods</sys:String>
+    <sys:String x:Key="Playlist.AddSelected">Add selected</sys:String>
+    <sys:String x:Key="Playlist.Close">Close</sys:String>
+    <sys:String x:Key="Playlist.RemoveMod">Remove from playlist</sys:String>
+    <sys:String x:Key="Playlist.NewPlayset">New playlist…</sys:String>
+    <sys:String x:Key="Playlist.NewPlaysetTitle">New playlist</sys:String>
+    <sys:String x:Key="Playlist.NamePlaceholder">Playlist name</sys:String>
+    <sys:String x:Key="Playlist.NameInvalid">Name is empty or already exists</sys:String>
+    <sys:String x:Key="Playlist.OK">OK</sys:String>
+    <sys:String x:Key="Playlist.Cancel">Cancel</sys:String>
+
+    <!-- Tools page -->
+    <sys:String x:Key="Other.Title">Tools</sys:String>
+    <sys:String x:Key="Other.NotImplemented">Not yet implemented</sys:String>
+</ResourceDictionary>

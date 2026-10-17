@@ -1,0 +1,204 @@
+<UserControl x:Class="ModManagerGUI.Views.ModsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:ModManagerGUI.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="720" d:DesignWidth="1280">
+    <UserControl.Resources>
+        <!-- 模组卡片模板：缩略图 + 标题/ID + 启用复选框（对应 Python ModCard） -->
+        <DataTemplate x:Key="ModCardTemplate" DataType="{x:Type vm:ModCardViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" CornerRadius="4" Width="64" Height="64">
+                    <Image Source="{Binding Thumbnail}"
+                           Stretch="UniformToFill"
+                           RenderOptions.BitmapScalingMode="HighQuality" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}"
+                               FontSize="14"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Id, StringFormat=ID {0}}"
+                               FontSize="11"
+                               Opacity="0.6" />
+                </StackPanel>
+                <CheckBox Grid.Column="2"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding IsEnabled}"
+                          Click="ToggleButton_OnClick"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- 卡片容器：圆角、悬浮/选中高亮（对应 CardWidget + set_selected） -->
+        <Style x:Key="ModCardItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="0,0,4,8" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                Background="#14FFFFFF">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#22FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="36,20,36,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 顶部工具栏：管理分类 / 筛选 / 加载顺序（后两者为 UI 占位，与 Python 版一致） -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <ui:Button Content="{DynamicResource Top.ManageCategories}" />
+                <ui:Button Content="{DynamicResource Top.Filter}" Margin="12,0,0,0" />
+                <TextBlock Text="{DynamicResource Top.CategoryHint}"
+                           VerticalAlignment="Center" Margin="12,0,0,0"
+                           FontSize="12" Opacity="0.6" />
+                <TextBlock Text="{DynamicResource Top.NoCategory}"
+                           VerticalAlignment="Center" Margin="8,0,0,0"
+                           FontSize="12" Opacity="0.45" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                <TextBlock Text="{DynamicResource Top.LoadOrder}"
+                           VerticalAlignment="Center" Margin="0,0,10,0"
+                           FontSize="12" Opacity="0.6" />
+                <ComboBox Width="160"
+                          ItemsSource="{Binding SortOptions}"
+                          SelectedIndex="{Binding SelectedSortIndex}" />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- 主体：左栏模组列表 45% + 右栏详情 55%-->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="45*" MinWidth="300" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="55*" MinWidth="380" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左栏：模组卡片列表 -->
+            <Grid Grid.Column="0" Margin="0,0,16,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <TextBlock Text="{DynamicResource Left.RecognizedMods}"
+                                   FontSize="16" VerticalAlignment="Bottom" FontWeight="Regular" />
+                        <TextBlock Text="{Binding Mods.Count}"
+                                   FontSize="12" Opacity="0.6"
+                                   VerticalAlignment="Bottom" Margin="8,0,0,2" />
+                    </StackPanel>
+                    <ui:AutoSuggestBox Width="240"
+                                       HorizontalAlignment="Right"
+                                       PlaceholderText="{DynamicResource Left.SearchPlaceholder}"
+                                       Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                </DockPanel>
+
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding ModsView}"
+                         ItemTemplate="{StaticResource ModCardTemplate}"
+                         ItemContainerStyle="{StaticResource ModCardItemStyle}"
+                         SelectedItem="{Binding SelectedMod}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         Background="Transparent"
+                         BorderThickness="0" />
+            </Grid>
+            <!-- 右栏：模组详情 + 当前播放集（播放集为占位，与 Python 版一致） -->
+            <Grid Grid.Column="2" Margin="16,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <TextBlock Text="{DynamicResource Right.ModDetail}"
+                                   FontSize="16" FontWeight="Regular" />
+                        <TextBlock Text="{Binding DetailId}"
+                                   FontSize="12" Opacity="0.6"
+                                   VerticalAlignment="Bottom" Margin="8,0,0,2" />
+                    </StackPanel>
+                    <!-- "..." 下拉菜单（对应 RoundMenu：打开目录/工坊页面/复制 ID） -->
+                    <ui:Button x:Name="MoreButton"
+                               DockPanel.Dock="Right"
+                               HorizontalAlignment="Right"
+                               Appearance="Transparent"
+                               Click="MoreButton_Click">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="MoreHorizontal24" />
+                        </ui:Button.Icon>
+                        <ui:Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{DynamicResource Menu.OpenFolder}"
+                                          Command="{Binding PlacementTarget.DataContext.OpenModFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                <MenuItem Header="{DynamicResource Menu.WorkshopPage}"
+                                          Command="{Binding PlacementTarget.DataContext.OpenWorkshopPageCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                <MenuItem Header="{DynamicResource Menu.CopyId}"
+                                          Command="{Binding PlacementTarget.DataContext.CopyModIdCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            </ContextMenu>
+                        </ui:Button.ContextMenu>
+                    </ui:Button>
+                </DockPanel>
+                <TextBlock Grid.Row="1"
+                           Text="{Binding DetailTitle}"
+                           FontSize="16" FontWeight="Regular"
+                           TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                <!-- 描述滚动区（固定高度 240，对应 Python height=240） -->
+                <ScrollViewer Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Stretch" >
+                    <TextBlock Text="{Binding DetailDescription}"
+                               TextWrapping="Wrap" />
+                </ScrollViewer>
+                <GridSplitter Grid.Row="3" HorizontalAlignment="Stretch" ShowsPreview="False"/>
+                <DockPanel Grid.Row="4" Margin="0,24,0,8">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <TextBlock Text="{DynamicResource Right.Playlist}"
+                                   FontSize="16" FontWeight="Regular" />
+                        <TextBlock Text="{Binding PlaylistCount}"
+                                   FontSize="12" Opacity="0.6"
+                                   VerticalAlignment="Bottom" Margin="8,0,0,2" />
+                    </StackPanel>
+                    <ui:AutoSuggestBox Width="280"
+                                       HorizontalAlignment="Right"
+                                       PlaceholderText="{DynamicResource Right.SearchPlaylist}" />
+                </DockPanel>
+
+                <TextBlock Grid.Row="5"
+                           Text="{DynamicResource Right.PlaylistEmpty}"
+                           FontSize="12" Opacity="0.45" />
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

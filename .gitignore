@@ -1,0 +1,15 @@
+# 构建输出
+bin/
+obj/
+
+# IDE
+.idea/
+.vs/
+*.user
+RavenfieldModManager.sln.DotSettings.user
+
+# JetBrains 本地缓存
+identifier.sqlite
+
+# BepInEx 插件依赖 DLL（含游戏本体文件，请自行从游戏目录 / BepInEx 获取）
+BepInExPlugin/libs/

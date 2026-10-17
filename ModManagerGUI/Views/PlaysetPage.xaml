@@ -1,0 +1,150 @@
+<UserControl x:Class="ModManagerGUI.Views.PlaysetPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:ModManagerGUI.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="720" d:DesignWidth="1280"
+             >
+    <UserControl.Resources>
+        <!-- 播放集内模组卡片：缩略图 + 标题/ID + 移除按钮 -->
+        <DataTemplate x:Key="PlaylistModCardTemplate" DataType="{x:Type vm:ModCardViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" CornerRadius="4" Width="64" Height="64">
+                    <Image Source="{Binding Thumbnail}"
+                           Stretch="UniformToFill"
+                           RenderOptions.BitmapScalingMode="HighQuality" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}"
+                               FontSize="14"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Id, StringFormat=ID {0}}"
+                               FontSize="11"
+                               Opacity="0.6" />
+                </StackPanel>
+                <ui:Button Grid.Column="2"
+                           VerticalAlignment="Center"
+                           Appearance="Transparent"
+                           ToolTip="{DynamicResource Playlist.RemoveMod}"
+                           Click="RemoveModButton_Click">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="Delete24" />
+                    </ui:Button.Icon>
+                </ui:Button>
+            </Grid>
+        </DataTemplate>
+
+        <!-- 下拉框末尾的"新建播放集"操作项 -->
+        <DataTemplate DataType="{x:Type vm:PlaysetViewModel+NewPlaysetActionItem}">
+            <StackPanel Orientation="Horizontal">
+                <ui:SymbolIcon Symbol="Add24" FontSize="14" Margin="0,0,8,0" />
+                <TextBlock Text="{DynamicResource Playlist.NewPlayset}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- 卡片容器：圆角、悬浮高亮（与模组页 ModCardItemStyle 一致） -->
+        <Style x:Key="PlaylistModCardItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="0,0,4,8" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                Background="#14FFFFFF">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#22FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="36,20,36,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 顶部工具栏：左上播放集下拉框 + 右上添加模组按钮 -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <TextBlock Text="{DynamicResource Playlist.SelectPlayset}"
+                           VerticalAlignment="Center"
+                           FontSize="12" Opacity="0.6" Margin="0,0,10,0" />
+                <ComboBox Width="220"
+                          x:Name="PlaysetComboBox"
+                          ItemsSource="{Binding PlaysetItems}"
+                          SelectedItem="{Binding SelectedPlaysetItem}"
+                          SelectionChanged="PlaysetComboBox_SelectionChanged" />
+                <ui:Button x:Name="MoreButton"
+                           HorizontalAlignment="Right"
+                           Appearance="Transparent"
+                           Click="MoreButton_Click">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="MoreHorizontal24" />
+                    </ui:Button.Icon>
+                    <ui:Button.ContextMenu>
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <ContextMenu.Resources>
+                                <!-- 禁用态：文字明显置灰 + 悬停显示"不可用"光标 -->
+                                <Style TargetType="MenuItem">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.35" />
+                                            <Setter Property="Foreground" Value="#666666" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ContextMenu.Resources>
+                            <MenuItem Header="{DynamicResource Playlist.Menu.RemovePlayset}"
+                                      Command="{Binding RemovePlaysetCommand}"/>
+                            <MenuItem Header="{DynamicResource Playlist.Menu.RenamePlayset}"
+                                      Click="OpenRenamePlaysetDialog"
+                                      IsEnabled="{Binding NotDefaultPlayset}"/>
+                        </ContextMenu>
+                    </ui:Button.ContextMenu>
+                </ui:Button>
+            </StackPanel>
+            <ui:Button DockPanel.Dock="Right"
+                       HorizontalAlignment="Right"
+                       Icon="{ui:SymbolIcon Add24}"
+                       Content="{DynamicResource Playlist.AddMod}"
+                       Click="AddModButton_Click" />
+        </DockPanel>
+        <!-- 列表标题 -->
+        <DockPanel Grid.Row="1">
+            <TextBlock Text="{DynamicResource Right.Playlist}"
+                       FontSize="16" FontWeight="Regular" />
+            <TextBlock Text="{Binding Mods.Count}"
+                       FontSize="12" Opacity="0.6"
+                       VerticalAlignment="Bottom" Margin="8,0,0,2" />
+        </DockPanel>
+        <Separator Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Stretch" BorderThickness="1.5" Margin="0,5"></Separator>
+        <!-- 主体：当前播放集的模组列表 -->
+        <ListBox Grid.Row="3" ItemsSource="{Binding Mods}"
+                 VerticalAlignment="Top"
+                 ItemTemplate="{StaticResource PlaylistModCardTemplate}"
+                 ItemContainerStyle="{StaticResource PlaylistModCardItemStyle}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 Background="Transparent"
+                 BorderThickness="0" />
+    </Grid>
+</UserControl>

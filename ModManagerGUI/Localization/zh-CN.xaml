@@ -1,0 +1,60 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- 导航 -->
+    <sys:String x:Key="Nav.Mods">模组</sys:String>
+    <sys:String x:Key="Nav.Playlist">播放集</sys:String>
+    <sys:String x:Key="Nav.Tools">工具</sys:String>
+
+    <!-- 顶部工具栏 -->
+    <sys:String x:Key="Top.ManageCategories">管理分类</sys:String>
+    <sys:String x:Key="Top.Filter">进行筛选</sys:String>
+    <sys:String x:Key="Top.CategoryHint">进行分类</sys:String>
+    <sys:String x:Key="Top.NoCategory">暂无分类</sys:String>
+    <sys:String x:Key="Top.LoadOrder">加载顺序</sys:String>
+
+    <!-- 排序下拉选项 -->
+    <sys:String x:Key="Sort.Current">当前顺序</sys:String>
+    <sys:String x:Key="Sort.Name">名称</sys:String>
+    <sys:String x:Key="Sort.UpdateTime">更新时间</sys:String>
+    <sys:String x:Key="Sort.DownloadDate">下载日期</sys:String>
+
+    <!-- 左栏 -->
+    <sys:String x:Key="Left.RecognizedMods">已识别模组</sys:String>
+    <sys:String x:Key="Left.SearchPlaceholder">搜索已识别模组</sys:String>
+
+    <!-- 右栏详情 -->
+    <sys:String x:Key="Right.ModDetail">模组详情</sys:String>
+    <sys:String x:Key="Right.NoSelection">未选择模组</sys:String>
+    <sys:String x:Key="Right.ClickHint">点击左侧模组卡片查看详情</sys:String>
+    <sys:String x:Key="Right.Loading">详情加载中…</sys:String>
+    <sys:String x:Key="Right.NoDescription">暂无描述</sys:String>
+    <sys:String x:Key="Right.Playlist">当前播放集模组</sys:String>
+    <sys:String x:Key="Right.SearchPlaylist">搜索当前播放集</sys:String>
+    <sys:String x:Key="Right.PlaylistEmpty">当前播放集还没有模组</sys:String>
+
+    <!-- "..." 菜单 -->
+    <sys:String x:Key="Menu.OpenFolder">打开模组目录</sys:String>
+    <sys:String x:Key="Menu.WorkshopPage">创意工坊页面</sys:String>
+    <sys:String x:Key="Menu.CopyId">复制模组 ID</sys:String>
+
+    <!-- 播放集页 -->
+    <sys:String x:Key="Playlist.SelectPlayset">播放集</sys:String>
+    <sys:String x:Key="Playlist.AddMod">添加模组</sys:String>
+    <sys:String x:Key="Playlist.AddModTitle">所有模组</sys:String>
+    <sys:String x:Key="Playlist.AddSelected">添加所选</sys:String>
+    <sys:String x:Key="Playlist.Close">关闭</sys:String>
+    <sys:String x:Key="Playlist.RemoveMod">从播放集移除</sys:String>
+    <sys:String x:Key="Playlist.NewPlayset">新建播放集…</sys:String>
+    <sys:String x:Key="Playlist.NewPlaysetTitle">新建播放集</sys:String>
+    <sys:String x:Key="Playlist.NamePlaceholder">播放集名称</sys:String>
+    <sys:String x:Key="Playlist.NameInvalid">名称为空或与现有播放集重名</sys:String>
+    <sys:String x:Key="Playlist.OK">确定</sys:String>
+    <sys:String x:Key="Playlist.Cancel">取消</sys:String>
+    <sys:String x:Key="Playlist.Menu.RemovePlayset">删除播放集</sys:String>
+    <sys:String x:Key="Playlist.Menu.RenamePlayset">重命名播放集</sys:String>
+
+    <!-- 工具页 -->
+    <sys:String x:Key="Other.Title">工具</sys:String>
+    <sys:String x:Key="Other.NotImplemented">尚未实现</sys:String>
+</ResourceDictionary>
