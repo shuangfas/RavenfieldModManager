@@ -34,6 +34,23 @@ Ravenfield ModManager 是一款为 Steam 版《Ravenfield》制作的创意工�
 - [AssetStudioMod](https://github.com/aelurum/AssetStudioMod)：用于读取 Unity 资源文件。
 - [SimpleJSON](https://github.com/HenrikPoulsen/SimpleJSON)：后端内置，用于 JSON 解析。
 
+## 构建
+
+前端（ModManagerGUI）所需的依赖已包含在仓库的 `ModManagerGUI/libs/` 中，可直接编译。
+
+后端（BepInExPlugin）所需的依赖 DLL 未包含在仓库中，请将下列 DLL 放入 `BepInExPlugin/libs/` 后再编译：
+
+| DLL | 获取方式 |
+| --- | --- |
+| `Assembly-CSharp.dll` | 游戏目录 `Ravenfield_Data/Managed/` |
+| `UnityEngine.dll` | 游戏目录 `Ravenfield_Data/Managed/` |
+| `UnityEngine.CoreModule.dll` | 游戏目录 `Ravenfield_Data/Managed/` |
+| `UnityEngine.UI.dll` | 游戏目录 `Ravenfield_Data/Managed/` |
+| `com.rlabrecque.steamworks.net.dll` | 游戏目录 `Ravenfield_Data/Managed/`（Steamworks.NET） |
+| `BepInEx.dll` | [BepInEx](https://bepinex.com/) 发布包 |
+| `BepInEx.Harmony.dll` | [BepInEx](https://bepinex.com/) 发布包 |
+| `0Harmony.dll` | [BepInEx](https://bepinex.com/) 发布包 |
+
 ## AI 使用情况
 
 本项目在开发过程中使用了 Claude Code 进行代码补全、结构设计和片段建议，大部分 AI 生成代码均已由作者审查、测试和修改。

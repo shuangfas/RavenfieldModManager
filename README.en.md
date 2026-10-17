@@ -34,6 +34,23 @@ This project is licensed under the [MIT License](LICENSE).
 - [AssetStudioMod](https://github.com/aelurum/AssetStudioMod): Used for reading Unity asset files.
 - [SimpleJSON](https://github.com/HenrikPoulsen/SimpleJSON): Bundled in the backend for JSON parsing.
 
+## Building
+
+The dependencies required by the frontend (ModManagerGUI) are already included in `ModManagerGUI/libs/` in the repository, so it can be compiled directly.
+
+The dependency DLLs required by the backend (BepInExPlugin) are not included in the repository. Please place the following DLLs into `BepInExPlugin/libs/` before compiling:
+
+| DLL | Source |
+| --- | --- |
+| `Assembly-CSharp.dll` | Game directory `Ravenfield_Data/Managed/` |
+| `UnityEngine.dll` | Game directory `Ravenfield_Data/Managed/` |
+| `UnityEngine.CoreModule.dll` | Game directory `Ravenfield_Data/Managed/` |
+| `UnityEngine.UI.dll` | Game directory `Ravenfield_Data/Managed/` |
+| `com.rlabrecque.steamworks.net.dll` | Game directory `Ravenfield_Data/Managed/` (Steamworks.NET) |
+| `BepInEx.dll` | [BepInEx](https://bepinex.com/) release package |
+| `BepInEx.Harmony.dll` | [BepInEx](https://bepinex.com/) release package |
+| `0Harmony.dll` | [BepInEx](https://bepinex.com/) release package |
+
 ## AI Usage
 
 Claude Code was used during the development of this project for code completion, structural design, and snippet suggestions. Most AI-generated code has been reviewed, tested, and modified by the author.
