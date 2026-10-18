@@ -14,12 +14,14 @@ public partial class PlaysetViewModel : ObservableObject {
 
     public PlaysetViewModel(ModsViewModel modsVm) {
         _modsVm = modsVm;
-        _playsets = MainWindow.CommonConfig.Load().Playsets;
+        Configs.CommonConfig c = MainWindow.CommonConfig.Load();
+        _playsets = c.Playsets;
         // 确保 "None" 播放集始终位于首位
         if (_playsets.All(p => p.Name != DefaultPlaysetName)) {
             _playsets.Insert(0, new Playset(DefaultPlaysetName,GetLastId()+1,true, []));
             Save();
         }
+        SelectedPlaysetItem = _playsets.FirstOrDefault(p => p.Name == c.SelectedList,_playsets[0]).Name;
         RefreshPlaysetItems();
     }
 
@@ -146,6 +148,7 @@ public partial class PlaysetViewModel : ObservableObject {
         // 选中的是"新建播放集"操作项时不重建列表，由视图还原选择并弹出对话框
         if (value is NewPlaysetActionItem)
             return;
+        MainWindow.CommonConfig.Update(config => config.SelectedList = (string)value);
         RebuildMods();
     }
 
