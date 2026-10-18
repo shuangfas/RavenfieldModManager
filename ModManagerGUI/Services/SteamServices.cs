@@ -5,12 +5,11 @@ using ModManagerGUI.Base;
 
 namespace ModManagerGUI.Services;
 
-public static partial class SteamLocator
-{
+public partial class SteamServices {
     public const string RavenfieldAppId = "636480";
     
     public const int WorkshopDetailBatch = 50;
-    public static string? WorkshopPath { get; private set; }
+    public static string WorkshopPath { get; private set; }
     
     public static string? GetSteamPath()
     {
@@ -54,23 +53,20 @@ public static partial class SteamLocator
         throw new UnavailableException("Couldn't find game installation path");
     }
 
-    public static List<string>? GetWorkshopInfo(string appId)
+    public static List<string> GetWorkshopInfo(string appId)
     {
         foreach (var libPath in GetAllLibraryPaths())
         {
             var workshopPath = Path.Combine(libPath, "steamapps", "workshop", "content", appId);
             if (!Directory.Exists(workshopPath))
                 continue;
-
             WorkshopPath = workshopPath;
-            return
-            [
+            return [
                 .. Directory.EnumerateDirectories(workshopPath)
                     .Select(d => Path.GetFileName(d))
-                    .Where(name => name is not null),
             ];
         }
-        return null;
+        throw new UnavailableException("Couldn't find Workshop path");
     }
 
     [GeneratedRegex(@"""path""\s+""([^""]+)""")]

@@ -38,10 +38,27 @@ public partial class AddModsDialog : Wpf.Ui.Controls.FluentWindow
         ModsList.ItemsSource = _modsView;
     }
 
-    private void SortBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void SortBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_modsView is { } view && SortBox.SelectedIndex >= 0)
+        if (_modsView is not { } view || SortBox.SelectedIndex < 0)
+            return;
+
+        if (SortBox.SelectedIndex == 2)
+        {
+            // 更新时间排序：从数据库按需加载 TimeUpdated
+            var ids = _available.Select(m => m.Id).ToList();
+            var entries = await Task.Run(() => ModDatabase.GetMany(ids));
+            if (SortBox.SelectedIndex != 2)
+                return; // 排序方式已切换
+
+            var timeUpdatedById = entries.ToDictionary(
+                kv => kv.Key, kv => ModDatabase.ParseData(kv.Value).TimeUpdated);
+            ModSorting.Apply(view, 2, timeUpdatedById);
+        }
+        else
+        {
             ModSorting.Apply(view, SortBox.SelectedIndex);
+        }
     }
 
     /// <summary>搜索过滤：匹配 id 或标题</summary>

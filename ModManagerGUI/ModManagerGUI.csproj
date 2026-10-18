@@ -24,5 +24,11 @@
             <HintPath>libs\Newtonsoft.Json.dll</HintPath>
         </Reference>
     </ItemGroup>
+    <ItemGroup>
+      <Content Include="Assets\**\*">
+          <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
 
 </Project>

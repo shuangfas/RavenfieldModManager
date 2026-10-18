@@ -14,8 +14,10 @@ public static class ModSorting
     public static readonly string[] SortKeys =
         ["Sort.Current", "Sort.Name", "Sort.UpdateTime", "Sort.DownloadDate"];
 
-    /// <summary>按排序方式设置视图的 CustomSort 并刷新；"当前顺序"清除排序（保持插入顺序）</summary>
-    public static void Apply(ListCollectionView view, int sortIndex)
+    /// <summary>按排序方式设置视图的 CustomSort 并刷新；"当前顺序"清除排序（保持插入顺序）。
+    /// 更新时间排序需调用方先从数据库按需加载 timeUpdatedById。</summary>
+    public static void Apply(ListCollectionView view, int sortIndex,
+        IReadOnlyDictionary<string, long>? timeUpdatedById = null)
     {
         view.CustomSort = sortIndex switch
         {
@@ -23,8 +25,8 @@ public static class ModSorting
                 ((ModCardViewModel)a).Title, ((ModCardViewModel)b).Title,
                 StringComparison.OrdinalIgnoreCase)),
             2 => Comparer<object>.Create((a, b) =>
-                GetTimeUpdated((ModCardViewModel)b)
-                    .CompareTo(GetTimeUpdated((ModCardViewModel)a))),
+                GetTimeUpdated((ModCardViewModel)b, timeUpdatedById)
+                    .CompareTo(GetTimeUpdated((ModCardViewModel)a, timeUpdatedById))),
             3 => Comparer<object>.Create((a, b) =>
                 GetDownloadTime((ModCardViewModel)b)
                     .CompareTo(GetDownloadTime((ModCardViewModel)a))),
@@ -33,9 +35,10 @@ public static class ModSorting
         view.Refresh();
     }
 
-    /// <summary>工坊更新时间；详情未到达（或旧缓存缺字段）时为 0，排在最后</summary>
-    private static long GetTimeUpdated(ModCardViewModel mod) =>
-        mod.Data?.TimeUpdated ?? 0;
+    /// <summary>工坊更新时间（从数据库按需加载）；未命中（或旧缓存缺字段）时为 0，排在最后</summary>
+    private static long GetTimeUpdated(ModCardViewModel mod,
+        IReadOnlyDictionary<string, long>? timeUpdatedById) =>
+        timeUpdatedById?.GetValueOrDefault(mod.Id) ?? 0;
 
     /// <summary>下载日期 = 模组目录创建时间（不可用时取最后写入时间）</summary>
     private static DateTime GetDownloadTime(ModCardViewModel mod)

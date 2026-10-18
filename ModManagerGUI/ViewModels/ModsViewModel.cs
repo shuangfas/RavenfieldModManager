@@ -1,7 +1,5 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Data;
@@ -13,7 +11,7 @@ using ModManagerGUI.Services;
 namespace ModManagerGUI.ViewModels;
 
 /// <summary>
-/// 模组页 ViewModel：列表、搜索、选中详情、"..."菜单命令与后台加载
+/// 模组页 ViewModel：列表、搜索、选中详情、"..."菜单命令与按需加载
 /// （对应 Python ui_qt/mods_page.py 的 ModsPage）
 /// </summary>
 public partial class ModsViewModel : ObservableObject
@@ -35,11 +33,15 @@ public partial class ModsViewModel : ObservableObject
     private string _searchText = "";
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(DetailTitle), nameof(DetailDescription), nameof(DetailId))]
+    [NotifyPropertyChangedFor(nameof(DetailTitle), nameof(DetailId))]
     [NotifyCanExecuteChangedFor(nameof(OpenModFolderCommand))]
     [NotifyCanExecuteChangedFor(nameof(OpenWorkshopPageCommand))]
     [NotifyCanExecuteChangedFor(nameof(CopyModIdCommand))]
     private ModCardViewModel? _selectedMod;
+
+    /// <summary>选中项变更时按需从数据库加载描述</summary>
+    partial void OnSelectedModChanged(ModCardViewModel? value) =>
+        _ = LoadDetailDescriptionAsync();
 
     /// <summary>排序下拉选项（顺序对应 SortKeys）</summary>
     [ObservableProperty]
@@ -49,7 +51,13 @@ public partial class ModsViewModel : ObservableObject
     [ObservableProperty]
     private int _selectedSortIndex;
 
-    partial void OnSelectedSortIndexChanged(int value) => ApplySort();
+    partial void OnSelectedSortIndexChanged(int value)
+    {
+        if (value == 2)
+            _ = LoadTimeUpdatedAsync(); // 更新时间排序：从数据库按需加载
+        else
+            ApplySort();
+    }
 
     // =========================================================
     // 右侧详情栏文本
@@ -61,12 +69,34 @@ public partial class ModsViewModel : ObservableObject
     public string DetailTitle =>
         SelectedMod?.Title ?? L("Right.NoSelection");
 
-    public string DetailDescription => SelectedMod switch
+    /// <summary>右侧描述文本：选中模组时才从数据库查询（后台尚未获取到时显示加载中）</summary>
+    [ObservableProperty]
+    private string _detailDescription = "";
+
+    /// <summary>按需从数据库加载选中模组的描述（数据库未命中说明后台还没获取到）</summary>
+    private async Task LoadDetailDescriptionAsync()
     {
-        null => L("Right.ClickHint"),
-        { Description: null } => L("Right.Loading"), // 详情还没返回
-        { Description: "" } => L("Right.NoDescription"),
-        { Description: var desc } => StripBbCode(desc),
+        if (SelectedMod is not { } mod)
+        {
+            DetailDescription = L("Right.ClickHint");
+            return;
+        }
+
+        DetailDescription = L("Right.Loading");
+        var entry = await Task.Run(() => ModDatabase.Get(mod.Id));
+        if (!ReferenceEquals(SelectedMod, mod))
+            return; // 查询期间选中项已切换
+
+        DetailDescription = entry is null
+            ? L("Right.Loading")
+            : FormatDescription(ModDatabase.ParseData(entry).Description);
+    }
+
+    private string FormatDescription(string? desc) => desc switch
+    {
+        null => L("Right.Loading"), // 详情还没返回
+        "" => L("Right.NoDescription"),
+        _ => StripBbCode(desc),
     };
 
     /// <summary>去掉 BBCode 标记（如 [b]、[url=...]），只保留原始文本</summary>
@@ -77,119 +107,52 @@ public partial class ModsViewModel : ObservableObject
     private static partial Regex BbCodeTagRegex();
 
     // =========================================================
-    // 初始化：模组发现 + 启动后台加载
+    // 初始化：模组发现（内容加载见 ModCardViewModel.Load）
     // =========================================================
 
-    /// <summary>同步扫描创意工坊目录并创建卡片，随后异步加载缩略图与详情</summary>
+    /// <summary>同步扫描创意工坊目录并创建卡片；缩略图与详情由卡片滚入可视区时按需加载</summary>
     public void Initialize()
     {
         SortOptions = [.. SortKeys.Select(L)];
 
-        var ids = SteamLocator.GetWorkshopInfo(SteamLocator.RavenfieldAppId);
-        if (ids is null)
-            return;
+        var ids = SteamServices.GetWorkshopInfo(SteamServices.RavenfieldAppId);
 
         foreach (var id in ids.OrderBy(long.Parse))
         {
-            var modDir = Path.Combine(SteamLocator.WorkshopPath ?? "", id);
-            List<string> rfcFiles = Directory.Exists(modDir)
-                ? [.. Directory.EnumerateFiles(modDir, "*.rfc")
-                    .Select(f => Path.GetFileName(f))
-                    .Where(name => name is not null)]
-                : [];
-
-            var card = new ModCardViewModel(id, rfcFiles, modDir)
-            {
-                Thumbnail = ThumbnailService.Placeholder,
-            };
+            var card = new ModCardViewModel(id);
             Mods.Add(card);
             _cardsById[id] = card;
         }
 
         // 对应 Python start() 的两个后台线程
-        _ = LoadThumbnailsAsync(_cts.Token);
         _ = LoadDetailsAsync(_cts.Token);
     }
 
-    // =========================================================
-    // 后台加载：缩略图 + 工坊详情
-    // =========================================================
-
-    private async Task LoadThumbnailsAsync(CancellationToken ct)
-    {
-        foreach (var card in Mods)
-        {
-            if (ct.IsCancellationRequested)
-                return; // 窗口已关闭
-
-            var iconPath = Path.Combine(
-                SteamLocator.WorkshopPath ?? "", card.Id, "icon.png");
-            var image = await Task.Run(() => ThumbnailService.Load(iconPath));
-
-            if (ct.IsCancellationRequested)
-                return;
-            if (image is not null)
-                card.Thumbnail = image;
-        }
-    }
-
-    private async Task LoadDetailsAsync(CancellationToken ct)
-    {
+    private async Task LoadDetailsAsync(CancellationToken ct) {
         var ids = Mods.Select(m => m.Id).ToList();
-
-        // 先用本地数据库缓存填充未过期条目，只向 Steam 请求过期的
-        var cached = await Task.Run(() => ModDatabase.GetMany(ids));
-        foreach (var (id, entry) in cached)
-        {
-            if (ct.IsCancellationRequested)
-                return;
-            if (ModDatabase.IsStale(entry))
-                continue;
-            if (_cardsById.TryGetValue(id, out var card))
+        foreach (var (id, entry) in await Task.Run(() => ModDatabase.GetMany(ids))) {
+            if (!ModDatabase.IsStale(entry) && _cardsById.TryGetValue(id, out var card)) {
                 card.SetWorkshopData(ModDatabase.ParseData(entry));
+                ids.Remove(id);
+            }
         }
-
         RefreshIfSorted();
-
-        var staleIds = ids.Where(id =>
-            !cached.TryGetValue(id, out var entry) || ModDatabase.IsStale(entry)).ToList();
-        for (var start = 0; start < staleIds.Count; start += SteamLocator.WorkshopDetailBatch)
-        {
-            if (ct.IsCancellationRequested)
-                return; // 窗口已关闭
-
-            var batch = staleIds.Skip(start).Take(SteamLocator.WorkshopDetailBatch).ToList();
+        foreach (var batch in ids.Chunk(SteamServices.WorkshopDetailBatch)) {
             Dictionary<string, WorkshopData> details;
-            try
-            {
+            try {
                 details = await WorkshopApiService.GetDetailsAsync(batch);
             }
-            catch
-            {
+            catch {
                 continue; // 网络失败时跳过该批，卡片保留 id 占位文本
             }
-
-            if (ct.IsCancellationRequested)
-                return;
-
-            foreach (var id in batch)
-            {
-                if (!details.TryGetValue(id, out var detail) ||
-                    !_cardsById.TryGetValue(id, out var card))
+            foreach (var id in batch) {
+                if (!details.TryGetValue(id, out var detail) || !_cardsById.TryGetValue(id, out var card))
                     continue;
 
                 card.SetWorkshopData(detail);
                 // 写入本地缓存：获取时间 = 现在，下次更新时间 = +1 小时
                 await Task.Run(() => ModDatabase.Save(id, detail));
             }
-
-            // 选中项的详情刚到达：同步刷新右侧详情栏（对应 Python apply_detail）
-            if (SelectedMod is { } selected && details.ContainsKey(selected.Id))
-            {
-                OnPropertyChanged(nameof(DetailTitle));
-                OnPropertyChanged(nameof(DetailDescription));
-            }
-
             RefreshIfSorted();
         }
     }
@@ -229,13 +192,32 @@ public partial class ModsViewModel : ObservableObject
     // 排序
     // =========================================================
 
+    /// <summary>更新时间排序用的 TimeUpdated 映射（选中该排序时才从数据库加载）</summary>
+    private IReadOnlyDictionary<string, long> _timeUpdatedById =
+        new Dictionary<string, long>();
+
     /// <summary>按当前排序方式刷新列表视图（逻辑见 ModSorting）</summary>
-    private void ApplySort() => ModSorting.Apply(ModsView, SelectedSortIndex);
+    private void ApplySort() => ModSorting.Apply(ModsView, SelectedSortIndex, _timeUpdatedById);
+
+    /// <summary>从数据库按需加载 TimeUpdated 映射，加载完成后应用排序</summary>
+    private async Task LoadTimeUpdatedAsync()
+    {
+        var ids = Mods.Select(m => m.Id).ToList();
+        var entries = await Task.Run(() => ModDatabase.GetMany(ids));
+        if (SelectedSortIndex != 2)
+            return; // 排序方式已切换
+
+        _timeUpdatedById = entries.ToDictionary(
+            kv => kv.Key, kv => ModDatabase.ParseData(kv.Value).TimeUpdated);
+        ApplySort();
+    }
 
     /// <summary>工坊详情到达后，名称/更新时间排序需要重新应用</summary>
     private void RefreshIfSorted()
     {
-        if (SelectedSortIndex is 1 or 2)
+        if (SelectedSortIndex == 2)
+            _ = LoadTimeUpdatedAsync(); // 新详情已入库，重新加载
+        else if (SelectedSortIndex == 1)
             ModsView.Refresh();
     }
 
@@ -248,8 +230,8 @@ public partial class ModsViewModel : ObservableObject
         if (keyword.Length == 0)
             return true;
 
-        // 对应 Python：data 为 None 时只匹配 id，否则匹配 id + 标题
-        var text = mod.Data is null ? mod.Id : $"{mod.Id} {mod.Data.Title}";
+        // 对应 Python：详情未到达时只匹配 id，否则匹配 id + 标题
+        var text = mod.HasWorkshopData ? $"{mod.Id} {mod.Title}" : mod.Id;
         return text.ToLowerInvariant().Contains(keyword);
     }
 
@@ -267,6 +249,6 @@ public partial class ModsViewModel : ObservableObject
     {
         SortOptions = [.. SortKeys.Select(L)];
         OnPropertyChanged(nameof(DetailTitle));
-        OnPropertyChanged(nameof(DetailDescription));
+        _ = LoadDetailDescriptionAsync(); // 重新解析占位文本
     }
 }

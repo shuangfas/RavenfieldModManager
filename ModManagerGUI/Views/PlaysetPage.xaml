@@ -9,39 +9,6 @@
              d:DesignHeight="720" d:DesignWidth="1280"
              >
     <UserControl.Resources>
-        <!-- 播放集内模组卡片：缩略图 + 标题/ID + 移除按钮 -->
-        <DataTemplate x:Key="PlaylistModCardTemplate" DataType="{x:Type vm:ModCardViewModel}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" CornerRadius="4" Width="64" Height="64">
-                    <Image Source="{Binding Thumbnail}"
-                           Stretch="UniformToFill"
-                           RenderOptions.BitmapScalingMode="HighQuality" />
-                </Border>
-                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Title}"
-                               FontSize="14"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="{Binding Id, StringFormat=ID {0}}"
-                               FontSize="11"
-                               Opacity="0.6" />
-                </StackPanel>
-                <ui:Button Grid.Column="2"
-                           VerticalAlignment="Center"
-                           Appearance="Transparent"
-                           ToolTip="{DynamicResource Playlist.RemoveMod}"
-                           Click="RemoveModButton_Click">
-                    <ui:Button.Icon>
-                        <ui:SymbolIcon Symbol="Delete24" />
-                    </ui:Button.Icon>
-                </ui:Button>
-            </Grid>
-        </DataTemplate>
-
         <!-- 下拉框末尾的"新建播放集"操作项 -->
         <DataTemplate DataType="{x:Type vm:PlaysetViewModel+NewPlaysetActionItem}">
             <StackPanel Orientation="Horizontal">
@@ -139,12 +106,49 @@
         </DockPanel>
         <Separator Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Stretch" BorderThickness="1.5" Margin="0,5"></Separator>
         <!-- 主体：当前播放集的模组列表 -->
-        <ListBox Grid.Row="3" ItemsSource="{Binding Mods}"
+        <ListBox Grid.Row="3"
+                 ItemsSource="{Binding Mods}"
                  VerticalAlignment="Top"
-                 ItemTemplate="{StaticResource PlaylistModCardTemplate}"
                  ItemContainerStyle="{StaticResource PlaylistModCardItemStyle}"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  Background="Transparent"
-                 BorderThickness="0" />
+                 BorderThickness="0">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:ModCardViewModel}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" CornerRadius="4" Width="64" Height="64">
+                            <Image Stretch="UniformToFill"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                <Image.Source>
+                                    <BitmapImage DecodePixelHeight="64" DecodePixelWidth="64" UriSource="{Binding ImagePath}"/>
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Title}"
+                                       FontSize="14"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Id, StringFormat=ID {0}}"
+                                       FontSize="11"
+                                       Opacity="0.6" />
+                        </StackPanel>
+                        <ui:Button Grid.Column="2"
+                                   VerticalAlignment="Center"
+                                   Appearance="Transparent"
+                                   ToolTip="{DynamicResource Playlist.RemoveMod}"
+                                   Click="RemoveModButton_Click">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Delete24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </UserControl>
