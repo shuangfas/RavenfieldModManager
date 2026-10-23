@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using ModManagerGUI.Base;
 
-namespace ModManagerGUI.Services;
+namespace ModManagerGUI.Services.Steam;
 
 public partial class SteamServices {
     public const string RavenfieldAppId = "636480";

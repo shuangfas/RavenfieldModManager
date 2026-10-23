@@ -7,10 +7,6 @@
     <sys:String x:Key="Nav.Tools">工具</sys:String>
 
     <!-- 顶部工具栏 -->
-    <sys:String x:Key="Top.ManageCategories">管理分类</sys:String>
-    <sys:String x:Key="Top.Filter">进行筛选</sys:String>
-    <sys:String x:Key="Top.CategoryHint">进行分类</sys:String>
-    <sys:String x:Key="Top.NoCategory">暂无分类</sys:String>
     <sys:String x:Key="Top.LoadOrder">加载顺序</sys:String>
 
     <!-- 排序下拉选项 -->
@@ -53,8 +49,7 @@
     <sys:String x:Key="Playlist.Cancel">取消</sys:String>
     <sys:String x:Key="Playlist.Menu.RemovePlayset">删除播放集</sys:String>
     <sys:String x:Key="Playlist.Menu.RenamePlayset">重命名播放集</sys:String>
-
-    <!-- 工具页 -->
-    <sys:String x:Key="Other.Title">工具</sys:String>
-    <sys:String x:Key="Other.NotImplemented">尚未实现</sys:String>
+    
+    <sys:String x:Key="Settings.HtmlRender">Html渲染</sys:String>
+    
 </ResourceDictionary>

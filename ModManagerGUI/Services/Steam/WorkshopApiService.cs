@@ -1,8 +1,8 @@
 using System.Net.Http;
-using System.Text.Json;
 using ModManagerGUI.Models;
+using Newtonsoft.Json.Linq;
 
-namespace ModManagerGUI.Services;
+namespace ModManagerGUI.Services.Steam;
 
 /// <summary>
 /// Steam 创意工坊详情 API（对应 Python SteamLocator.get_workshop_detail）
@@ -29,21 +29,20 @@ public static class WorkshopApiService
             DetailsUrl, new FormUrlEncodedContent(form));
         response.EnsureSuccessStatusCode();
 
-        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var root = JObject.Parse(await response.Content.ReadAsStringAsync());
         var details = new Dictionary<string, WorkshopData>();
-        foreach (var item in doc.RootElement
-                     .GetProperty("response")
-                     .GetProperty("publishedfiledetails")
-                     .EnumerateArray())
+        foreach (var item in root["response"]?["publishedfiledetails"] as JArray ?? [])
         {
-            var id = item.GetProperty("publishedfileid").GetString();
+            var id = item.Value<string>("publishedfileid");
             if (id is null)
                 continue;
-            var title = item.TryGetProperty("title", out var t) ? t.GetString() : "";
-            var description = item.TryGetProperty("description", out var d) ? d.GetString() : "";
-            var timeUpdated = item.TryGetProperty("time_updated", out var tu) && tu.ValueKind == JsonValueKind.Number
-                ? tu.GetInt64() : 0;
-            details[id] = new WorkshopData(title ?? "", description ?? "", timeUpdated);
+            var title = item.Value<string>("title") ?? "";
+            var description = item.Value<string>("description") ?? "";
+            var timeUpdated = item.Value<long?>("time_updated") ?? 0;
+            List<string> tags = (item["tags"] as JArray)?
+                .Select(t => t.Value<string>("tag") ?? "")
+                .ToList() ?? [];
+            details[id] = new WorkshopData(title, description, tags, timeUpdated);
         }
         return details;
     }

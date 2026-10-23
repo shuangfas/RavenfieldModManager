@@ -148,7 +148,7 @@ public static class ModDatabase
     /// <summary>反序列化 Entry.Data 为 WorkshopData</summary>
     public static WorkshopData ParseData(Entry entry) =>
         JsonSerializer.Deserialize<WorkshopData>(entry.Data, JsonOpts)
-        ?? new WorkshopData("", "");
+        ?? new WorkshopData("", "",new List<string>());
 
     /// <summary>判断记录是否已过期（需要重新从 Steam 获取）</summary>
     public static bool IsStale(Entry entry, DateTime? now = null) =>

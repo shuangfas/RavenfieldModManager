@@ -5,7 +5,7 @@ namespace ModManagerGUI.Services;
 
 
 public class GameService {
-    public static readonly string GAME_PATH = SteamServices.GetGameInstallPath("636480");
+    public static readonly string GAME_PATH = Steam.SteamServices.GetGameInstallPath("636480");
     public static readonly ConfigReader<Configs.GameConfig> GameConfig = new(Path.Combine(GAME_PATH, "BepInEx/config/ModManager_Plugin.json"));
     public static bool IsBepInExInstalled() {
         return  File.Exists(Path.Combine(GAME_PATH, "BepInEx\\core\\BepInEx.dll"));

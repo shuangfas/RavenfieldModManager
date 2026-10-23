@@ -2,6 +2,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ModManagerGUI.Models;
 using ModManagerGUI.Services;
+using SteamServices = ModManagerGUI.Services.Steam.SteamServices;
 
 namespace ModManagerGUI.ViewModels;
 
@@ -18,6 +19,7 @@ public partial class ModCardViewModel : ObservableObject
 
     /// <summary>创意工坊条目 ID</summary>
     public string Id { get; }
+    public List<string> Tags { get; set; }
 
     /// <summary>模组目录下的 .rfc 文件名列表</summary>
     public IReadOnlyList<string> ModFiles {
@@ -53,5 +55,6 @@ public partial class ModCardViewModel : ObservableObject
     {
         HasWorkshopData = true;
         Title = data.Title;
+        Tags =  data.Tags;
     }
 }

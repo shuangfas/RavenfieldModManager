@@ -7,10 +7,6 @@
     <sys:String x:Key="Nav.Tools">Tools</sys:String>
 
     <!-- Top bar -->
-    <sys:String x:Key="Top.ManageCategories">Manage Categories</sys:String>
-    <sys:String x:Key="Top.Filter">Filter</sys:String>
-    <sys:String x:Key="Top.CategoryHint">Categorize</sys:String>
-    <sys:String x:Key="Top.NoCategory">No categories</sys:String>
     <sys:String x:Key="Top.LoadOrder">Load order</sys:String>
 
     <!-- Sort options -->
@@ -52,7 +48,5 @@
     <sys:String x:Key="Playlist.OK">OK</sys:String>
     <sys:String x:Key="Playlist.Cancel">Cancel</sys:String>
 
-    <!-- Tools page -->
-    <sys:String x:Key="Other.Title">Tools</sys:String>
-    <sys:String x:Key="Other.NotImplemented">Not yet implemented</sys:String>
+    <sys:String x:Key="Settings.HtmlRender">Html Render</sys:String>
 </ResourceDictionary>

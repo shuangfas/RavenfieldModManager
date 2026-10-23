@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:vm="clr-namespace:ModManagerGUI.ViewModels"
+             xmlns:wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280">
     <UserControl.Resources>
@@ -42,20 +43,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
-        <!-- 顶部工具栏：管理分类 / 筛选 / 加载顺序（后两者为 UI 占位，与 Python 版一致） -->
+        
         <DockPanel Grid.Row="0" Margin="0,0,0,16">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                <ui:Button Content="{DynamicResource Top.ManageCategories}" />
-                <ui:Button Content="{DynamicResource Top.Filter}" Margin="12,0,0,0" />
-                <TextBlock Text="{DynamicResource Top.CategoryHint}"
-                           VerticalAlignment="Center" Margin="12,0,0,0"
-                           FontSize="12" Opacity="0.6" />
-                <TextBlock Text="{DynamicResource Top.NoCategory}"
-                           VerticalAlignment="Center" Margin="8,0,0,0"
-                           FontSize="12" Opacity="0.45" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
                 <TextBlock Text="{DynamicResource Top.LoadOrder}"
                            VerticalAlignment="Center" Margin="0,0,10,0"
                            FontSize="12" Opacity="0.6" />
@@ -74,7 +64,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- 左栏：模组卡片列表 -->
-            <Grid Grid.Column="0" Margin="0,0,16,0">
+            <Grid Grid.Column="0" Margin="0,0,8,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -131,23 +121,20 @@
                 </ListBox>
             </Grid>
             <!-- 右栏：模组详情 + 当前播放集（播放集为占位，与 Python 版一致） -->
-            <Grid Grid.Column="2" Margin="16,0,0,0">
+            <Grid Grid.Column="2" Margin="0,0,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="5" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                    
                 </Grid.RowDefinitions>
 
-                <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                <DockPanel Grid.Row="0" Margin="0,0,0,6">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                         <TextBlock Text="{DynamicResource Right.ModDetail}"
                                    FontSize="16" FontWeight="Regular" />
                         <TextBlock Text="{Binding DetailId}"
                                    FontSize="12" Opacity="0.6"
-                                   VerticalAlignment="Bottom" Margin="8,0,0,2" />
+                                   VerticalAlignment="Center" Margin="8,0,0,5" />
                     </StackPanel>
                     <!-- "..." 下拉菜单（对应 RoundMenu：打开目录/工坊页面/复制 ID） -->
                     <ui:Button x:Name="MoreButton"
@@ -170,33 +157,36 @@
                         </ui:Button.ContextMenu>
                     </ui:Button>
                 </DockPanel>
-                <TextBlock Grid.Row="1"
-                           Text="{Binding DetailTitle}"
-                           FontSize="16" FontWeight="Regular"
-                           TextWrapping="Wrap" Margin="0,0,0,8" />
-
-                <!-- 描述滚动区（固定高度 240，对应 Python height=240） -->
-                <ScrollViewer Grid.Row="2" VerticalAlignment="Top" HorizontalAlignment="Stretch" >
-                    <TextBlock Text="{Binding DetailDescription}"
-                               TextWrapping="Wrap" />
-                </ScrollViewer>
-                <GridSplitter Grid.Row="3" HorizontalAlignment="Stretch" ShowsPreview="False"/>
-                <DockPanel Grid.Row="4" Margin="0,24,0,8">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                        <TextBlock Text="{DynamicResource Right.Playlist}"
-                                   FontSize="16" FontWeight="Regular" />
-                        <TextBlock Text="{Binding PlaylistCount}"
-                                   FontSize="12" Opacity="0.6"
-                                   VerticalAlignment="Bottom" Margin="8,0,0,2" />
-                    </StackPanel>
-                    <ui:AutoSuggestBox Width="280"
-                                       HorizontalAlignment="Right"
-                                       PlaceholderText="{DynamicResource Right.SearchPlaylist}" />
-                </DockPanel>
-
-                <TextBlock Grid.Row="5"
-                           Text="{DynamicResource Right.PlaylistEmpty}"
-                           FontSize="12" Opacity="0.45" />
+                <Border Grid.Row="1" BorderBrush="AliceBlue" BorderThickness="1" Padding="10">
+                    <Grid>
+                        <!-- 开启 HTML 渲染时显示 -->
+                        <wpf:HtmlPanel Text="{Binding DetailDescription}" Background="Transparent">
+                            <wpf:HtmlPanel.Style>
+                                <Style TargetType="{x:Type wpf:HtmlPanel}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding EnableHtmlRendering}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </wpf:HtmlPanel.Style>
+                        </wpf:HtmlPanel>
+                        <!-- 关闭 HTML 渲染时显示纯文本 -->
+                        <ScrollViewer VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                            <ScrollViewer.Style>
+                                <Style TargetType="{x:Type ScrollViewer}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding EnableHtmlRendering}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ScrollViewer.Style>
+                            <TextBlock Text="{Binding DetailDescription}"
+                                       TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
             </Grid>
         </Grid>
     </Grid>

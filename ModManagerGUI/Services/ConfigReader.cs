@@ -8,6 +8,7 @@ public class ConfigReader<T> where T : class, new() {
     private static readonly JsonSerializerSettings DefaultSettings = new() {
         Formatting = Formatting.Indented,
         NullValueHandling = NullValueHandling.Ignore,
+        DefaultValueHandling = DefaultValueHandling.Ignore
     };
 
     private readonly string _path;

@@ -7,6 +7,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ModManagerGUI.Models;
 using ModManagerGUI.Services;
+using ModManagerGUI.Services.Steam;
+using SteamBBCodeParser = ModManagerGUI.Services.Steam.SteamBBCodeParser;
+using SteamServices = ModManagerGUI.Services.Steam.SteamServices;
 
 namespace ModManagerGUI.ViewModels;
 
@@ -22,7 +25,6 @@ public partial class ModsViewModel : ObservableObject
     public ModsViewModel()
     {
         ModsView = (ListCollectionView)CollectionViewSource.GetDefaultView(Mods);
-        ModsView.Filter = FilterMod;
     }
 
     public ObservableCollection<ModCardViewModel> Mods { get; } = [];
@@ -73,6 +75,14 @@ public partial class ModsViewModel : ObservableObject
     [ObservableProperty]
     private string _detailDescription = "";
 
+    /// <summary>设置页开关：右侧详情用 HtmlPanel 渲染（否则退化为纯文本 TextBlock）</summary>
+    [ObservableProperty]
+    private bool _enableHtmlRendering;
+
+    /// <summary>HTML 渲染开关切换后按新格式重新生成右侧描述</summary>
+    partial void OnEnableHtmlRenderingChanged(bool value) =>
+        _ = LoadDetailDescriptionAsync();
+
     /// <summary>按需从数据库加载选中模组的描述（数据库未命中说明后台还没获取到）</summary>
     private async Task LoadDetailDescriptionAsync()
     {
@@ -92,10 +102,11 @@ public partial class ModsViewModel : ObservableObject
             : FormatDescription(ModDatabase.ParseData(entry).Description);
     }
 
-    private string FormatDescription(string? desc) => desc switch
-    {
-        null => L("Right.Loading"), // 详情还没返回
+    private string FormatDescription(string? desc) => desc switch {
+        null => L("Right.Loading"),
         "" => L("Right.NoDescription"),
+        _ when EnableHtmlRendering
+            => "<font color='white'>" + SteamBBCodeParser.ToHtml(desc) + "</font>",
         _ => StripBbCode(desc),
     };
 
@@ -114,6 +125,7 @@ public partial class ModsViewModel : ObservableObject
     public void Initialize()
     {
         SortOptions = [.. SortKeys.Select(L)];
+        EnableHtmlRendering = MainWindow.CommonConfig.Current.EnableHtmlRendering;
 
         var ids = SteamServices.GetWorkshopInfo(SteamServices.RavenfieldAppId);
 
@@ -136,7 +148,7 @@ public partial class ModsViewModel : ObservableObject
                 ids.Remove(id);
             }
         }
-        RefreshIfSorted();
+        RefreshList();
         foreach (var batch in ids.Chunk(SteamServices.WorkshopDetailBatch)) {
             Dictionary<string, WorkshopData> details;
             try {
@@ -153,7 +165,7 @@ public partial class ModsViewModel : ObservableObject
                 // 写入本地缓存：获取时间 = 现在，下次更新时间 = +1 小时
                 await Task.Run(() => ModDatabase.Save(id, detail));
             }
-            RefreshIfSorted();
+            RefreshList();
         }
     }
 
@@ -186,8 +198,6 @@ public partial class ModsViewModel : ObservableObject
     // 搜索
     // =========================================================
 
-    partial void OnSearchTextChanged(string value) => ModsView.Refresh();
-
     // =========================================================
     // 排序
     // =========================================================
@@ -212,27 +222,12 @@ public partial class ModsViewModel : ObservableObject
         ApplySort();
     }
 
-    /// <summary>工坊详情到达后，名称/更新时间排序需要重新应用</summary>
-    private void RefreshIfSorted()
-    {
+    /// <summary>工坊详情到达后刷新</summary>
+    private void RefreshList() {
         if (SelectedSortIndex == 2)
             _ = LoadTimeUpdatedAsync(); // 新详情已入库，重新加载
         else if (SelectedSortIndex == 1)
             ModsView.Refresh();
-    }
-
-    private bool FilterMod(object obj)
-    {
-        if (obj is not ModCardViewModel mod)
-            return false;
-
-        var keyword = SearchText.Trim().ToLowerInvariant();
-        if (keyword.Length == 0)
-            return true;
-
-        // 对应 Python：详情未到达时只匹配 id，否则匹配 id + 标题
-        var text = mod.HasWorkshopData ? $"{mod.Id} {mod.Title}" : mod.Id;
-        return text.ToLowerInvariant().Contains(keyword);
     }
 
     // =========================================================
