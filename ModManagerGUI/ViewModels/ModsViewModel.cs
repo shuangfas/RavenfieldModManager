@@ -198,6 +198,12 @@ public partial class ModsViewModel : ObservableObject
     // 搜索
     // =========================================================
 
+    /// <summary>选中的筛选标签（标签弹窗尚未实现，空集 = 不按标签过滤）</summary>
+    private readonly HashSet<string> _selectedTags = [];
+
+    partial void OnSearchTextChanged(string value) =>
+        ModFiltering.Apply(ModsView, value, _selectedTags);
+
     // =========================================================
     // 排序
     // =========================================================

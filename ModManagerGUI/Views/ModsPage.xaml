@@ -81,7 +81,7 @@
                     <ui:AutoSuggestBox Width="240"
                                        HorizontalAlignment="Right"
                                        PlaceholderText="{DynamicResource Left.SearchPlaceholder}"
-                                       Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                                       Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </DockPanel>
 
                 <ListBox Grid.Row="1"
