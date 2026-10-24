@@ -146,7 +146,7 @@ public partial class PlaysetViewModel : ObservableObject {
 
     partial void OnSelectedPlaysetItemChanged(object? value) {
         // 选中的是"新建播放集"操作项时不重建列表，由视图还原选择并弹出对话框
-        if (value is NewPlaysetActionItem)
+        if (value is NewPlaysetActionItem || value is null)
             return;
         MainWindow.CommonConfig.Update(config => config.SelectedList = (string)value);
         RebuildMods();
