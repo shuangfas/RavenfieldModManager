@@ -1,8 +1,7 @@
 using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Data.Sqlite;
 using ModManagerGUI.Models;
+using Newtonsoft.Json;
 
 namespace ModManagerGUI.Services;
 
@@ -19,9 +18,9 @@ public static class ModDatabase
     private static readonly string DbPath = Path.Combine(
         AppContext.BaseDirectory, "data", "mods.db");
 
-    private static readonly JsonSerializerOptions JsonOpts = new()
+    private static readonly JsonSerializerSettings JsonOpts = new()
     {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        NullValueHandling = NullValueHandling.Ignore,
     };
 
     /// <summary>数据库中一条工坊数据记录</summary>
@@ -69,7 +68,7 @@ public static class ModDatabase
         var now = fetchedAt ?? DateTime.UtcNow;
         var entry = new Entry(
             id,
-            JsonSerializer.Serialize(data, JsonOpts),
+            JsonConvert.SerializeObject(data, JsonOpts),
             now,
             now + (ttl ?? DefaultTtl));
         Save(entry);
@@ -147,7 +146,7 @@ public static class ModDatabase
 
     /// <summary>反序列化 Entry.Data 为 WorkshopData</summary>
     public static WorkshopData ParseData(Entry entry) =>
-        JsonSerializer.Deserialize<WorkshopData>(entry.Data, JsonOpts)
+        JsonConvert.DeserializeObject<WorkshopData>(entry.Data, JsonOpts)
         ?? new WorkshopData("", "",new List<string>());
 
     /// <summary>判断记录是否已过期（需要重新从 Steam 获取）</summary>
