@@ -68,221 +68,215 @@
     </UserControl.Resources>
 
     <Grid Margin="36,20,36,20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="45*" MinWidth="300" />
+            <ColumnDefinition Width="55*" MinWidth="380" />
+        </Grid.ColumnDefinitions>
 
-        <DockPanel Grid.Row="0" Margin="0,0,0,16">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                <TextBlock Text="{DynamicResource Top.LoadOrder}"
-                           VerticalAlignment="Center" Margin="0,0,10,0"
-                           FontSize="12" Opacity="0.6" />
-                <ComboBox Width="160"
-                          ItemsSource="{Binding SortOptions}"
-                          SelectedIndex="{Binding SelectedSortIndex}" />
-                <ui:Button x:Name="TagsButton"
-                           Margin="8,0,0,0"
-                           VerticalAlignment="Center"
-                           Appearance="Transparent"
-                           Click="TagsButton_Click">
-                    <ui:Button.Icon>
-                        <ui:SymbolIcon Symbol="Tag24" />
-                    </ui:Button.Icon>
-                </ui:Button>
-            </StackPanel>
-            <Popup x:Name="TagsPopup"
-                   PlacementTarget="{Binding ElementName=TagsButton}"
-                   Placement="Bottom"
-                   StaysOpen="False"
-                   AllowsTransparency="True"
-                   PopupAnimation="Fade">
-                <Border Background="#E61C1C1C"
-                        CornerRadius="8"
-                        Padding="12"
-                        Margin="0,4,0,0"
-                        MaxWidth="360">
-                    <DockPanel>
-                        <!-- 匹配模式开关：关 = AND（需命中全部标签），开 = OR（任一命中） -->
-                        <ui:ToggleSwitch DockPanel.Dock="Bottom"
-                                         HorizontalAlignment="Right"
-                                         Margin="0,8,0,0"
-                                         IsChecked="{Binding MatchAnyTag}"
-                                         OnContent="OR"
-                                         OffContent="AND">
-                        </ui:ToggleSwitch>
-                        <StackPanel>
-                        <TextBlock Text="ContentType" FontSize="12" Margin="0,0,0,4" />
-                        <ListBox x:Name="ContentTypeTagsList"
-                                 ItemsSource="{x:Static vm:ModsViewModel.CONTENT_TYPE_TAGS}"
-                                 ItemTemplate="{StaticResource TagItemTemplate}"
-                                 ItemContainerStyle="{StaticResource TagItemStyle}"
-                                 Background="Transparent"
-                                 BorderThickness="0"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 SelectionMode="Multiple"
-                                 SelectionChanged="TagsList_SelectionChanged">
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-                        </ListBox>
-                        <TextBlock Text="MapTags" FontSize="12" Margin="0,4,0,4" />
-                        <ListBox x:Name="MapTagsList"
-                                 ItemsSource="{x:Static vm:ModsViewModel.MAP_TAGS}"
-                                 ItemTemplate="{StaticResource TagItemTemplate}"
-                                 ItemContainerStyle="{StaticResource TagItemStyle}"
-                                 Background="Transparent"
-                                 BorderThickness="0"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 SelectionMode="Multiple"
-                                 SelectionChanged="TagsList_SelectionChanged">
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-                        </ListBox>
-                        </StackPanel>
-                    </DockPanel>
-                </Border>
-            </Popup>
-        </DockPanel>
+        <!-- 左栏：排序/标签工具栏 + 模组卡片列表 -->
+        <Grid Grid.Column="0" Margin="0,0,8,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <!-- 主体：左栏模组列表 45% + 右栏详情 55%-->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="45*" MinWidth="300" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="55*" MinWidth="380" />
-            </Grid.ColumnDefinitions>
-
-            <!-- 左栏：模组卡片列表 -->
-            <Grid Grid.Column="0" Margin="0,0,8,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <DockPanel Grid.Row="0" Margin="0,0,0,12">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                        <TextBlock Text="{DynamicResource Left.RecognizedMods}"
-                                   FontSize="16" VerticalAlignment="Bottom" FontWeight="Regular" />
-                        <TextBlock Text="{Binding Mods.Count}"
-                                   FontSize="12" Opacity="0.6"
-                                   VerticalAlignment="Bottom" Margin="8,0,0,2" />
-                    </StackPanel>
-                    <ui:AutoSuggestBox Width="240"
-                                       HorizontalAlignment="Right"
-                                       PlaceholderText="{DynamicResource Left.SearchPlaceholder}"
-                                       Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </DockPanel>
-
-                <ListBox Grid.Row="1"
-                         ItemsSource="{Binding ModsView}"
-                         ItemContainerStyle="{StaticResource ModCardItemStyle}"
-                         SelectedItem="{Binding SelectedMod}"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         Background="Transparent"
-                         BorderThickness="0">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:ModCardViewModel}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" CornerRadius="4" Width="64" Height="64">
-                                    <Image Stretch="UniformToFill"
-                                           RenderOptions.BitmapScalingMode="NearestNeighbor">
-                                        <Image.Source>
-                                            <BitmapImage DecodePixelHeight="64" DecodePixelWidth="64" UriSource="{Binding ImagePath}"/>
-                                        </Image.Source>
-                                    </Image>
-                                </Border>
-                                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}"
-                                               FontSize="14"
-                                               TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="{Binding Id, StringFormat=ID {0}}"
-                                               FontSize="11"
-                                               Opacity="0.6" />
-                                </StackPanel>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-            <!-- 右栏：模组详情 + 当前播放集（播放集为占位，与 Python 版一致） -->
-            <Grid Grid.Column="2" Margin="0,0,0,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition />
-                    
-                </Grid.RowDefinitions>
-
-                <DockPanel Grid.Row="0" Margin="0,0,0,6">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                        <TextBlock Text="{DynamicResource Right.ModDetail}"
-                                   FontSize="16" FontWeight="Regular" />
-                        <TextBlock Text="{Binding DetailId}"
-                                   FontSize="12" Opacity="0.6"
-                                   VerticalAlignment="Center" Margin="8,0,0,5" />
-                    </StackPanel>
-                    <!-- "..." 下拉菜单（对应 RoundMenu：打开目录/工坊页面/复制 ID） -->
-                    <ui:Button x:Name="MoreButton"
-                               DockPanel.Dock="Right"
-                               HorizontalAlignment="Right"
+            <DockPanel Grid.Row="0" Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <TextBlock Text="{DynamicResource Top.LoadOrder}"
+                               VerticalAlignment="Center" Margin="0,0,10,0"
+                               FontSize="12" Opacity="0.6" />
+                    <ComboBox Width="160"
+                              ItemsSource="{Binding SortOptions}"
+                              SelectedIndex="{Binding SelectedSortIndex}" />
+                    <ui:Button x:Name="TagsButton"
+                               Margin="8,0,0,0"
+                               VerticalAlignment="Center"
                                Appearance="Transparent"
-                               Click="MoreButton_Click">
+                               Click="TagsButton_Click">
                         <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="MoreHorizontal24" />
+                            <ui:SymbolIcon Symbol="Tag24" />
                         </ui:Button.Icon>
-                        <ui:Button.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="{DynamicResource Menu.OpenFolder}"
-                                          Command="{Binding PlacementTarget.DataContext.OpenModFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                <MenuItem Header="{DynamicResource Menu.WorkshopPage}"
-                                          Command="{Binding PlacementTarget.DataContext.OpenWorkshopPageCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                <MenuItem Header="{DynamicResource Menu.CopyId}"
-                                          Command="{Binding PlacementTarget.DataContext.CopyModIdCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                            </ContextMenu>
-                        </ui:Button.ContextMenu>
                     </ui:Button>
-                </DockPanel>
-                <Border Grid.Row="1" BorderBrush="AliceBlue" BorderThickness="1" Padding="10">
-                    <Grid>
-                        <!-- 开启 HTML 渲染时显示 -->
-                        <wpf:HtmlPanel Text="{Binding DetailDescription}" Background="Transparent">
-                            <wpf:HtmlPanel.Style>
-                                <Style TargetType="{x:Type wpf:HtmlPanel}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding EnableHtmlRendering}" Value="False">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </wpf:HtmlPanel.Style>
-                        </wpf:HtmlPanel>
-                        <!-- 关闭 HTML 渲染时显示纯文本 -->
-                        <ScrollViewer VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                            <ScrollViewer.Style>
-                                <Style TargetType="{x:Type ScrollViewer}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding EnableHtmlRendering}" Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ScrollViewer.Style>
-                            <TextBlock Text="{Binding DetailDescription}"
-                                       TextWrapping="Wrap" />
-                        </ScrollViewer>
-                    </Grid>
-                </Border>
-            </Grid>
+                </StackPanel>
+                <Popup x:Name="TagsPopup"
+                       PlacementTarget="{Binding ElementName=TagsButton}"
+                       Placement="Bottom"
+                       StaysOpen="False"
+                       AllowsTransparency="True"
+                       PopupAnimation="Fade">
+                    <Border Background="#E61C1C1C"
+                            CornerRadius="8"
+                            Padding="12"
+                            Margin="0,4,0,0"
+                            MaxWidth="360">
+                        <DockPanel>
+                            <!-- 匹配模式开关：关 = AND（需命中全部标签），开 = OR（任一命中） -->
+                            <ui:ToggleSwitch DockPanel.Dock="Bottom"
+                                             HorizontalAlignment="Right"
+                                             Margin="0,8,0,0"
+                                             IsChecked="{Binding MatchAnyTag}"
+                                             OnContent="OR"
+                                             OffContent="AND">
+                            </ui:ToggleSwitch>
+                            <StackPanel>
+                                <TextBlock Text="ContentType" FontSize="12" Margin="0,0,0,4" />
+                                <ListBox x:Name="ContentTypeTagsList"
+                                         ItemsSource="{x:Static vm:ModsViewModel.CONTENT_TYPE_TAGS}"
+                                         ItemTemplate="{StaticResource TagItemTemplate}"
+                                         ItemContainerStyle="{StaticResource TagItemStyle}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                         SelectionMode="Multiple"
+                                         SelectionChanged="TagsList_SelectionChanged">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                </ListBox>
+                                <TextBlock Text="MapTags" FontSize="12" Margin="0,4,0,4" />
+                                <ListBox x:Name="MapTagsList"
+                                         ItemsSource="{x:Static vm:ModsViewModel.MAP_TAGS}"
+                                         ItemTemplate="{StaticResource TagItemTemplate}"
+                                         ItemContainerStyle="{StaticResource TagItemStyle}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                         SelectionMode="Multiple"
+                                         SelectionChanged="TagsList_SelectionChanged">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                </ListBox>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </Popup>
+            </DockPanel>
+
+            <DockPanel Grid.Row="1" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <TextBlock Text="{DynamicResource Left.RecognizedMods}"
+                               FontSize="16" VerticalAlignment="Bottom" FontWeight="Regular" />
+                    <TextBlock Text="{Binding Mods.Count}"
+                               FontSize="12" Opacity="0.6"
+                               VerticalAlignment="Bottom" Margin="8,0,0,2" />
+                </StackPanel>
+                <ui:AutoSuggestBox Width="240"
+                                   HorizontalAlignment="Right"
+                                   PlaceholderText="{DynamicResource Left.SearchPlaceholder}"
+                                   Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </DockPanel>
+
+            <ListBox Grid.Row="2"
+                     ItemsSource="{Binding ModsView}"
+                     ItemContainerStyle="{StaticResource ModCardItemStyle}"
+                     SelectedItem="{Binding SelectedMod}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     Background="Transparent"
+                     BorderThickness="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:ModCardViewModel}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" CornerRadius="4" Width="64" Height="64">
+                                <Image Stretch="UniformToFill"
+                                       RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                    <Image.Source>
+                                        <BitmapImage DecodePixelHeight="64" DecodePixelWidth="64"
+                                                     UriSource="{Binding ImagePath}" />
+                                    </Image.Source>
+                                </Image>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="14"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Id, StringFormat=ID {0}}"
+                                           FontSize="11"
+                                           Opacity="0.6" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+
+        <!-- 右栏：模组详情 -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+
+            </Grid.RowDefinitions>
+
+            <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <TextBlock Text="{DynamicResource Right.ModDetail}"
+                               FontSize="16" FontWeight="Regular" />
+                    <TextBlock Text="{Binding DetailId}"
+                               FontSize="12" Opacity="0.6"
+                               VerticalAlignment="Center" Margin="8,0,0,5" />
+                </StackPanel>
+                <!-- "..." 下拉菜单（对应 RoundMenu：打开目录/工坊页面/复制 ID） -->
+                <ui:Button x:Name="MoreButton"
+                           DockPanel.Dock="Right"
+                           HorizontalAlignment="Right"
+                           Appearance="Transparent"
+                           Click="MoreButton_Click">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="MoreHorizontal24" />
+                    </ui:Button.Icon>
+                    <ui:Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="{DynamicResource Menu.OpenFolder}"
+                                      Command="{Binding PlacementTarget.DataContext.OpenModFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="{DynamicResource Menu.WorkshopPage}"
+                                      Command="{Binding PlacementTarget.DataContext.OpenWorkshopPageCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="{DynamicResource Menu.CopyId}"
+                                      Command="{Binding PlacementTarget.DataContext.CopyModIdCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                    </ui:Button.ContextMenu>
+                </ui:Button>
+            </DockPanel>
+            <Border Grid.Row="1" BorderBrush="AliceBlue" BorderThickness="1" Padding="10">
+                <Grid>
+                    <!-- 开启 HTML 渲染时显示 -->
+                    <wpf:HtmlPanel Text="{Binding DetailDescription}" Background="Transparent">
+                        <wpf:HtmlPanel.Style>
+                            <Style TargetType="{x:Type wpf:HtmlPanel}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding EnableHtmlRendering}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </wpf:HtmlPanel.Style>
+                    </wpf:HtmlPanel>
+                    <!-- 关闭 HTML 渲染时显示纯文本 -->
+                    <ScrollViewer VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                        <ScrollViewer.Style>
+                            <Style TargetType="{x:Type ScrollViewer}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding EnableHtmlRendering}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ScrollViewer.Style>
+                        <TextBlock Text="{Binding DetailDescription}"
+                                   TextWrapping="Wrap" />
+                    </ScrollViewer>
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>
