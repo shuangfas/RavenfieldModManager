@@ -36,6 +36,35 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- 标签弹窗公共资源：内容模板 + 可选中的胶囊样式（两组标签复用） -->
+        <DataTemplate x:Key="TagItemTemplate">
+            <TextBlock Text="{Binding}" FontSize="12" />
+        </DataTemplate>
+        <Style x:Key="TagItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd"
+                                CornerRadius="10"
+                                Background="#22FFFFFF"
+                                Padding="10,4"
+                                Margin="0,0,8,8">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="36,20,36,20">
@@ -43,7 +72,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
         <DockPanel Grid.Row="0" Margin="0,0,0,16">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                 <TextBlock Text="{DynamicResource Top.LoadOrder}"
@@ -52,7 +81,72 @@
                 <ComboBox Width="160"
                           ItemsSource="{Binding SortOptions}"
                           SelectedIndex="{Binding SelectedSortIndex}" />
+                <ui:Button x:Name="TagsButton"
+                           Margin="8,0,0,0"
+                           VerticalAlignment="Center"
+                           Appearance="Transparent"
+                           Click="TagsButton_Click">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="Tag24" />
+                    </ui:Button.Icon>
+                </ui:Button>
             </StackPanel>
+            <Popup x:Name="TagsPopup"
+                   PlacementTarget="{Binding ElementName=TagsButton}"
+                   Placement="Bottom"
+                   StaysOpen="False"
+                   AllowsTransparency="True">
+                <Border Background="#E61C1C1C"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,4,0,0"
+                        MaxWidth="360">
+                    <DockPanel>
+                        <!-- 匹配模式开关：关 = AND（需命中全部标签），开 = OR（任一命中） -->
+                        <ui:ToggleSwitch DockPanel.Dock="Bottom"
+                                         HorizontalAlignment="Right"
+                                         Margin="0,8,0,0"
+                                         IsChecked="{Binding MatchAnyTag}"
+                                         OnContent="OR"
+                                         OffContent="AND">
+                        </ui:ToggleSwitch>
+                        <StackPanel>
+                        <TextBlock Text="ContentType" FontSize="12" Margin="0,0,0,4" />
+                        <ListBox x:Name="ContentTypeTagsList"
+                                 ItemsSource="{x:Static vm:ModsViewModel.CONTENT_TYPE_TAGS}"
+                                 ItemTemplate="{StaticResource TagItemTemplate}"
+                                 ItemContainerStyle="{StaticResource TagItemStyle}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 SelectionMode="Multiple"
+                                 SelectionChanged="TagsList_SelectionChanged">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                        </ListBox>
+                        <TextBlock Text="MapTags" FontSize="12" Margin="0,4,0,4" />
+                        <ListBox x:Name="MapTagsList"
+                                 ItemsSource="{x:Static vm:ModsViewModel.MAP_TAGS}"
+                                 ItemTemplate="{StaticResource TagItemTemplate}"
+                                 ItemContainerStyle="{StaticResource TagItemStyle}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 SelectionMode="Multiple"
+                                 SelectionChanged="TagsList_SelectionChanged">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                        </ListBox>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </Popup>
         </DockPanel>
 
         <!-- 主体：左栏模组列表 45% + 右栏详情 55%-->

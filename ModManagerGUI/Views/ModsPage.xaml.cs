@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -23,6 +24,23 @@ public partial class ModsPage : UserControl
             menu.PlacementTarget = button;
             menu.Placement = PlacementMode.Bottom;
             menu.IsOpen = true;
+        }
+    }
+
+    /// <summary>切换标签筛选弹窗的显示/隐藏</summary>
+    private void TagsButton_Click(object sender, RoutedEventArgs e)
+    {
+        TagsPopup.IsOpen = !TagsPopup.IsOpen;
+    }
+
+    /// <summary>标签选中项变化：合并两个列表的选中项写入 ViewModel</summary>
+    private void TagsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (DataContext is ModsViewModel vm)
+        {
+            vm.UpdateSelectedTags(
+                ContentTypeTagsList.SelectedItems.Cast<string>(),
+                MapTagsList.SelectedItems.Cast<string>());
         }
     }
 

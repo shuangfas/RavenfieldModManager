@@ -22,6 +22,15 @@ public partial class ModsViewModel : ObservableObject
     private readonly CancellationTokenSource _cts = new();
     private readonly Dictionary<string, ModCardViewModel> _cardsById = [];
 
+    public static readonly IReadOnlyList<string> CONTENT_TYPE_TAGS = [
+        "Maps", "Maps - Mod Tools", "Weapons", "Vehicles", "Mutators", "Game Configuration", "Skins",
+        "Scripted Mission", "Campaign"
+    ];
+
+    public static readonly IReadOnlyList<string> MAP_TAGS = [
+        "Trigger System", "Ground Vehicles", "Naval Vehicles", "Air Vehicles"
+    ];
+
     public ModsViewModel()
     {
         ModsView = (ListCollectionView)CollectionViewSource.GetDefaultView(Mods);
@@ -198,11 +207,28 @@ public partial class ModsViewModel : ObservableObject
     // 搜索
     // =========================================================
 
-    /// <summary>选中的筛选标签（标签弹窗尚未实现，空集 = 不按标签过滤）</summary>
+    /// <summary>选中的筛选标签（标签弹窗两个列表合并写入，空集 = 不按标签过滤）</summary>
     private readonly HashSet<string> _selectedTags = [];
 
+    /// <summary>标签匹配模式：false = AND（需命中全部选中标签），true = OR（命中任一即可）</summary>
+    [ObservableProperty]
+    private bool _matchAnyTag;
+
+    partial void OnMatchAnyTagChanged(bool value) =>
+        ModFiltering.Apply(ModsView, SearchText, _selectedTags, value);
+
     partial void OnSearchTextChanged(string value) =>
-        ModFiltering.Apply(ModsView, value, _selectedTags);
+        ModFiltering.Apply(ModsView, value, _selectedTags, MatchAnyTag);
+
+    /// <summary>标签弹窗选中项变化时更新 _selectedTags 并重新过滤</summary>
+    public void UpdateSelectedTags(IEnumerable<string> contentTypeTags, IEnumerable<string> mapTags) {
+        _selectedTags.Clear();
+        foreach (var tag in contentTypeTags)
+            _selectedTags.Add(tag);
+        foreach (var tag in mapTags)
+            _selectedTags.Add(tag);
+        ModFiltering.Apply(ModsView, SearchText, _selectedTags, MatchAnyTag);
+    }
 
     // =========================================================
     // 排序
