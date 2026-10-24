@@ -17,22 +17,13 @@ public partial class ModCardViewModel : ObservableObject
 
     public ModCardViewModel(string id) {
         Id = id;
+        Tags = [];
         _title = id; // 详情到达前先显示 id 占位（对应 Python BodyLabel(mod.id)）
     }
 
     /// <summary>创意工坊条目 ID</summary>
     public string Id { get; }
-    public List<string> Tags { get; set; }
-
-    /// <summary>模组目录下的 .rfc 文件名列表</summary>
-    public IReadOnlyList<string> ModFiles {
-        get {
-            return [
-                .. Directory.EnumerateFiles(Path, "*.rfc")
-                    .Select(f => System.IO.Path.GetFileName(f))
-            ];
-        }
-    }
+    public List<string> Tags { get; private set; }
 
     /// <summary>模组所在目录</summary>
     public string Path {
