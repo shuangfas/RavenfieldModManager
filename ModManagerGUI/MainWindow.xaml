@@ -34,19 +34,20 @@
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Playlist}"
-                                       TargetPageType="{x:Type views:PlaysetPage}"
-                                       >
+                                       TargetPageType="{x:Type views:PlaysetPage}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Toolbox24" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
+            <ui:NavigationView.FooterMenuItems>
                 <ui:NavigationViewItem Content="{DynamicResource Nav.Tools}"
                                        TargetPageType="{x:Type views:SettingsPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="SettingsCogMultiple24" />
+                        <ui:SymbolIcon Symbol="Settings16" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
-            </ui:NavigationView.MenuItems>
+            </ui:NavigationView.FooterMenuItems>
 
             <!-- 窗格底部：模组总数（展开显示标签+数字，收起仅居中显示数字） -->
             <ui:NavigationView.PaneFooter>
