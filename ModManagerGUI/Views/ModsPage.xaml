@@ -4,15 +4,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:views="clr-namespace:ModManagerGUI.Views"
              xmlns:vm="clr-namespace:ModManagerGUI.ViewModels"
-             xmlns:wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280">
     <UserControl.Resources>
         <!-- 卡片容器：圆角、悬浮/选中高亮（对应 CardWidget + set_selected） -->
         <Style x:Key="ModCardItemStyle" TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="Padding" Value="12" />
+            <Setter Property="Padding" Value="12,10" />
             <Setter Property="Margin" Value="0,0,4,8" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -67,14 +67,15 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="36,20,36,20">
+    <Grid Margin="18,10,18,10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="45*" MinWidth="300" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="55*" MinWidth="380" />
         </Grid.ColumnDefinitions>
 
         <!-- 左栏：排序/标签工具栏 + 模组卡片列表 -->
-        <Grid Grid.Column="0" Margin="0,0,8,0">
+        <Grid Grid.Column="0" Margin="0,0,2,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -89,9 +90,19 @@
                     <ComboBox Width="160"
                               ItemsSource="{Binding SortOptions}"
                               SelectedIndex="{Binding SelectedSortIndex}" />
+                </StackPanel>
+                
+            </DockPanel>
+
+            <DockPanel Grid.Row="1" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal">
+                    <ui:AutoSuggestBox Width="300"
+                                       PlaceholderText="{DynamicResource Left.SearchPlaceholder}"
+                                       Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <ui:Button x:Name="TagsButton"
                                Margin="8,0,0,0"
-                               VerticalAlignment="Center"
+                               Width="36"
+                               Height="36"
                                Appearance="Transparent"
                                Click="TagsButton_Click">
                         <ui:Button.Icon>
@@ -158,20 +169,6 @@
                 </Popup>
             </DockPanel>
 
-            <DockPanel Grid.Row="1" Margin="0,0,0,12">
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <TextBlock Text="{DynamicResource Left.RecognizedMods}"
-                               FontSize="16" VerticalAlignment="Bottom" FontWeight="Regular" />
-                    <TextBlock Text="{Binding Mods.Count}"
-                               FontSize="12" Opacity="0.6"
-                               VerticalAlignment="Bottom" Margin="8,0,0,2" />
-                </StackPanel>
-                <ui:AutoSuggestBox Width="240"
-                                   HorizontalAlignment="Right"
-                                   PlaceholderText="{DynamicResource Left.SearchPlaceholder}"
-                                   Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            </DockPanel>
-
             <ListBox Grid.Row="2"
                      ItemsSource="{Binding ModsView}"
                      ItemContainerStyle="{StaticResource ModCardItemStyle}"
@@ -209,29 +206,42 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Grid>
-
+        <Separator Grid.Column="1" Background="White" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Left"
+                   Opacity="0.1">
+        </Separator>
         <!-- 右栏：模组详情 -->
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-
-            </Grid.RowDefinitions>
-
-            <DockPanel Grid.Row="0" Margin="0,0,0,6">
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <TextBlock Text="{DynamicResource Right.ModDetail}"
-                               FontSize="16" FontWeight="Regular" />
-                    <TextBlock Text="{Binding DetailId}"
-                               FontSize="12" Opacity="0.6"
-                               VerticalAlignment="Center" Margin="8,0,0,5" />
-                </StackPanel>
+        <Grid Grid.Column="2" Margin="12,0,0,0">
+            <Separator Background="White" Height="16" VerticalAlignment="Top" HorizontalAlignment="Stretch"
+                       Opacity="0.1" Margin="0,12,0,0">
+            </Separator>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:NavigationView Grid.Column="0" x:Name="DetailNavigation"
+                                   PaneDisplayMode="Top"
+                                   IsBackButtonVisible="Collapsed"
+                                   IsPaneToggleVisible="False"
+                                   Transition="SlideRight"
+                                   Background="Transparent"
+                                   Margin="0,-10,0,0"
+                                   DockPanel.Dock="Left">
+                    <ui:NavigationView.MenuItems>
+                        <ui:NavigationViewItem Content="{DynamicResource Right.Tab.ModDetail}"
+                                               TargetPageType="{x:Type views:ModDetailPage}"
+                                               NavigationCacheMode="Required" />
+                        <ui:NavigationViewItem Content="{DynamicResource Right.Tab.Content}"
+                                               TargetPageType="{x:Type views:ModContentPage}"
+                                               NavigationCacheMode="Required" />
+                    </ui:NavigationView.MenuItems>
+                </ui:NavigationView>
                 <!-- "..." 下拉菜单（对应 RoundMenu：打开目录/工坊页面/复制 ID） -->
-                <ui:Button x:Name="MoreButton"
-                           DockPanel.Dock="Right"
-                           HorizontalAlignment="Right"
+                <ui:Button Grid.Column="1"
                            Appearance="Transparent"
-                           Click="MoreButton_Click">
+                           Click="MoreButton_Click"
+                           HorizontalAlignment="Right" VerticalAlignment="Top"
+                           Margin="0,-5,0,0">
                     <ui:Button.Icon>
                         <ui:SymbolIcon Symbol="MoreHorizontal24" />
                     </ui:Button.Icon>
@@ -246,37 +256,7 @@
                         </ContextMenu>
                     </ui:Button.ContextMenu>
                 </ui:Button>
-            </DockPanel>
-            <Border Grid.Row="1" BorderBrush="AliceBlue" BorderThickness="1" Padding="10">
-                <Grid>
-                    <!-- 开启 HTML 渲染时显示 -->
-                    <wpf:HtmlPanel Text="{Binding DetailDescription}" Background="Transparent">
-                        <wpf:HtmlPanel.Style>
-                            <Style TargetType="{x:Type wpf:HtmlPanel}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding EnableHtmlRendering}" Value="False">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </wpf:HtmlPanel.Style>
-                    </wpf:HtmlPanel>
-                    <!-- 关闭 HTML 渲染时显示纯文本 -->
-                    <ScrollViewer VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                        <ScrollViewer.Style>
-                            <Style TargetType="{x:Type ScrollViewer}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding EnableHtmlRendering}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ScrollViewer.Style>
-                        <TextBlock Text="{Binding DetailDescription}"
-                                   TextWrapping="Wrap" />
-                    </ScrollViewer>
-                </Grid>
-            </Border>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

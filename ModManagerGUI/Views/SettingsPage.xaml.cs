@@ -15,7 +15,7 @@ public partial class SettingsPage : UserControl {
     private void LanguageButton_Click(object sender, RoutedEventArgs e) {
         MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
         LocalizationService.Toggle();
-        mainWindow._modsViewModel.OnLanguageChanged();
+        mainWindow.ModsViewModel.OnLanguageChanged();
     }
 
     private void ToggleButton_OnChecked(object sender, RoutedEventArgs e) {
@@ -23,7 +23,7 @@ public partial class SettingsPage : UserControl {
             MainWindow.CommonConfig.Update(p =>p.EnableHtmlRendering = toggleButton.IsChecked == true);
             // 同步到模组页：切换 HtmlPanel / TextBlock 并重新生成描述
             MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow._modsViewModel.EnableHtmlRendering = MainWindow.CommonConfig.Current.EnableHtmlRendering;
+            mainWindow.ModsViewModel.EnableHtmlRendering = MainWindow.CommonConfig.Current.EnableHtmlRendering;
         }
     }
 }

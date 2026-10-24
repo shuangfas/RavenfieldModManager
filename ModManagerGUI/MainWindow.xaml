@@ -47,6 +47,37 @@
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
+
+            <!-- 窗格底部：模组总数（展开显示标签+数字，收起仅居中显示数字） -->
+            <ui:NavigationView.PaneFooter>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Margin" Value="16,8,16,12" />
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType=ui:NavigationView}}" Value="False">
+                                    <Setter Property="Margin" Value="0,8,0,12" />
+                                    <Setter Property="HorizontalAlignment" Value="Center" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <TextBlock Text="{DynamicResource Nav.ModCount}" FontSize="12" Opacity="0.6" VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType=ui:NavigationView}}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="{Binding ModsViewModel.Mods.Count, RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay}"
+                               FontSize="12" Opacity="0.6" VerticalAlignment="Center" />
+                </StackPanel>
+            </ui:NavigationView.PaneFooter>
         </ui:NavigationView>
     </Grid>
 </ui:FluentWindow>

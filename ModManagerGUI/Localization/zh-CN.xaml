@@ -5,6 +5,7 @@
     <sys:String x:Key="Nav.Mods">模组</sys:String>
     <sys:String x:Key="Nav.Playlist">播放集</sys:String>
     <sys:String x:Key="Nav.Tools">工具</sys:String>
+    <sys:String x:Key="Nav.ModCount">模组数量：</sys:String>
 
     <!-- 顶部工具栏 -->
     <sys:String x:Key="Top.LoadOrder">加载顺序</sys:String>
@@ -20,11 +21,13 @@
     <sys:String x:Key="Left.SearchPlaceholder">搜索已识别模组</sys:String>
 
     <!-- 右栏详情 -->
-    <sys:String x:Key="Right.ModDetail">模组详情</sys:String>
+    
     <sys:String x:Key="Right.NoSelection">未选择模组</sys:String>
     <sys:String x:Key="Right.ClickHint">点击左侧模组卡片查看详情</sys:String>
     <sys:String x:Key="Right.Loading">详情加载中…</sys:String>
     <sys:String x:Key="Right.NoDescription">暂无描述</sys:String>
+    <sys:String x:Key="Right.Tab.ModDetail">模组详情</sys:String>
+    <sys:String x:Key="Right.Tab.Content">无</sys:String>
     <sys:String x:Key="Right.Playlist">当前播放集模组</sys:String>
     <sys:String x:Key="Right.SearchPlaylist">搜索当前播放集</sys:String>
     <sys:String x:Key="Right.PlaylistEmpty">当前播放集还没有模组</sys:String>

@@ -5,6 +5,7 @@
     <sys:String x:Key="Nav.Mods">Mods</sys:String>
     <sys:String x:Key="Nav.Playlist">Playlists</sys:String>
     <sys:String x:Key="Nav.Tools">Tools</sys:String>
+    <sys:String x:Key="Nav.ModCount">Mods: </sys:String>
 
     <!-- Top bar -->
     <sys:String x:Key="Top.LoadOrder">Load order</sys:String>
@@ -20,11 +21,12 @@
     <sys:String x:Key="Left.SearchPlaceholder">Search recognized mods</sys:String>
 
     <!-- Right detail panel -->
-    <sys:String x:Key="Right.ModDetail">Mod details</sys:String>
     <sys:String x:Key="Right.NoSelection">No mod selected</sys:String>
     <sys:String x:Key="Right.ClickHint">Click a mod card on the left to view details</sys:String>
     <sys:String x:Key="Right.Loading">Loading details…</sys:String>
     <sys:String x:Key="Right.NoDescription">No description</sys:String>
+    <sys:String x:Key="Right.Tab.ModDetail">Mod details</sys:String>
+    <sys:String x:Key="Right.Tab.Content">None</sys:String>
     <sys:String x:Key="Right.Playlist">Current playlist mods</sys:String>
     <sys:String x:Key="Right.SearchPlaylist">Search current playlist</sys:String>
     <sys:String x:Key="Right.PlaylistEmpty">The current playlist has no mods yet</sys:String>

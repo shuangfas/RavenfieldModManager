@@ -14,6 +14,13 @@ public partial class ModsPage : UserControl
     public ModsPage()
     {
         InitializeComponent();
+        Loaded += OnPageLoaded;
+    }
+
+    /// <summary>首次加载时导航到详情描述页（NavigationView 不会自动选中第一项；内部 Frame 是继承边界，需显式传入 DataContext）</summary>
+    private void OnPageLoaded(object sender, RoutedEventArgs e)
+    {
+        DetailNavigation.Navigate(typeof(ModDetailPage), DataContext);
     }
 
     /// <summary>打开 "..." 下拉菜单（对应 Python show_detail_menu 的 RoundMenu）</summary>

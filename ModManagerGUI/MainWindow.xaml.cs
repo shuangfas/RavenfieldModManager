@@ -11,7 +11,7 @@ namespace ModManagerGUI;
 public partial class MainWindow : Wpf.Ui.Controls.FluentWindow {
     public static readonly ConfigReader<Configs.CommonConfig> CommonConfig = new(Path.Combine(AppContext.BaseDirectory, "data", "config.json"));
     public static readonly GameService GameService = new();
-    public readonly ModsViewModel _modsViewModel = new();
+    public ModsViewModel ModsViewModel { get; } = new();
     private readonly PlaysetViewModel _playsetViewModel;
     private readonly ModsPage _modsPage;
     private readonly PlaysetPage _otherPage;
@@ -23,9 +23,9 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow {
         if (!GameService.IsBepInExInstalled()) {
             throw new UnavailableException("Couldn't find BepInEx installation");
         }
-        _modsViewModel.Initialize();
-        _modsPage = new ModsPage { DataContext = _modsViewModel };
-        _playsetViewModel = new PlaysetViewModel(_modsViewModel);
+        ModsViewModel.Initialize();
+        _modsPage = new ModsPage { DataContext = ModsViewModel };
+        _playsetViewModel = new PlaysetViewModel(ModsViewModel);
         _otherPage = new PlaysetPage { DataContext = _playsetViewModel };
         _settingsPage = new SettingsPage();
         // 用缓存的页面实例导航（对应 Python 版 pages 字典）
@@ -37,7 +37,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow {
             }));
         Loaded += (_, _) => RootNavigation.Navigate(typeof(ModsPage));
 
-        Closing += (_, _) => _modsViewModel.Shutdown();
+        Closing += (_, _) => ModsViewModel.Shutdown();
     }
 
     /// <summary>按 TargetPageType 返回缓存的页面实例</summary>
