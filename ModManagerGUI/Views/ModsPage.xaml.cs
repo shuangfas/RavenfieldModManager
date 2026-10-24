@@ -42,6 +42,13 @@ public partial class ModsPage : UserControl {
         TagsPopup.IsOpen = !TagsPopup.IsOpen;
     }
 
+    /// <summary>刷新按钮：跳过本地缓存，重新拉取全部模组详情</summary>
+    private void RefreshButton_Click(object sender, RoutedEventArgs e) {
+        if (DataContext is ModsViewModel vm) {
+            vm.RefreshDetails();
+        }
+    }
+
     /// <summary>标签选中项变化：合并两个列表的选中项写入 ViewModel</summary>
     private void TagsList_SelectionChanged(object sender, SelectionChangedEventArgs e) {
         if (DataContext is ModsViewModel vm) {

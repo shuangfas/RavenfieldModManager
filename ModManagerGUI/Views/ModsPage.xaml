@@ -90,6 +90,17 @@
                     <ComboBox Width="160"
                               ItemsSource="{Binding SortOptions}"
                               SelectedIndex="{Binding SelectedSortIndex}" />
+                    <!-- 刷新：跳过本地缓存，重新拉取全部模组详情；详情加载中时禁用 -->
+                    <ui:Button Margin="8,0,0,0"
+                               Width="36"
+                               Height="36"
+                               Appearance="Transparent"
+                               IsEnabled="{Binding CanRefresh}"
+                               Click="RefreshButton_Click">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="ArrowSync24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                 </StackPanel>
                 
             </DockPanel>
