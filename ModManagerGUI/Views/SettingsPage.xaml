@@ -18,7 +18,7 @@
                 </ui:Button.Icon>
             </ui:Button>
             <StackPanel Orientation="Horizontal" Margin="10,5" >
-                <TextBlock Text="{DynamicResource Settings.HtmlRender}" FontSize="5"></TextBlock>
+                <TextBlock Text="{DynamicResource Settings.HtmlRender}" FontSize="12"></TextBlock>
                 <ui:ToggleSwitch x:Name="HtmlRenderToggle" OnContent="On" OffContent="Off"
                                  Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnChecked"></ui:ToggleSwitch>
             </StackPanel>
