@@ -260,11 +260,11 @@
                     <ui:Button.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="{DynamicResource Menu.OpenFolder}"
-                                      Command="{Binding PlacementTarget.DataContext.OpenModFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                      Command="{Binding PlacementTarget.DataContext.SelectedMod.OpenModFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <MenuItem Header="{DynamicResource Menu.WorkshopPage}"
-                                      Command="{Binding PlacementTarget.DataContext.OpenWorkshopPageCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                      Command="{Binding PlacementTarget.DataContext.SelectedMod.OpenWorkshopPageCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <MenuItem Header="{DynamicResource Menu.CopyId}"
-                                      Command="{Binding PlacementTarget.DataContext.CopyModIdCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                      Command="{Binding PlacementTarget.DataContext.SelectedMod.CopyModIdCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         </ContextMenu>
                     </ui:Button.ContextMenu>
                 </ui:Button>

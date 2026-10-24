@@ -33,4 +33,8 @@ public static class LocalizationService
 
     public static void Toggle() =>
         SetLanguage(_current == "zh-CN" ? "en-US" : "zh-CN");
+
+    /// <summary>按 key 取当前语言的界面文本；资源缺失时返回 key 本身</summary>
+    public static string L(string key) =>
+        Application.Current.TryFindResource(key) as string ?? key;
 }

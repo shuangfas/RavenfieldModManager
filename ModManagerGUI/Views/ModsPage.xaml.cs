@@ -17,7 +17,8 @@ public partial class ModsPage : UserControl {
 
     /// <summary>首次加载时导航到详情描述页（NavigationView 不会自动选中第一项；内部 Frame 是继承边界，需显式传入 DataContext）</summary>
     private void OnPageLoaded(object sender, RoutedEventArgs e) {
-        DetailNavigation.Navigate(typeof(ModDetailPage), DataContext);
+        if (DataContext is ModsViewModel vm)
+            DetailNavigation.Navigate(typeof(ModDetailPage), vm.DetailPanel);
     }
 
     /// <summary>按目标页设置切换动画：详情页从右侧滑入，内容页从左侧滑入（Transition 在导航完成后才读取，此处提前改即可生效）</summary>

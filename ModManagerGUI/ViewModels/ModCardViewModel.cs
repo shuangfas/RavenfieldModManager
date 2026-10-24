@@ -1,5 +1,8 @@
+using System.Diagnostics;
 using System.IO;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using ModManagerGUI.Models;
 using ModManagerGUI.Services;
 using SteamServices = ModManagerGUI.Services.Steam.SteamServices;
@@ -57,4 +60,24 @@ public partial class ModCardViewModel : ObservableObject
         Title = data.Title;
         Tags =  data.Tags;
     }
+
+    // =========================================================
+    // 卡片 "..." 菜单操作（绑定见 ModsPage.xaml，经 SelectedMod 路由）
+    // =========================================================
+
+    [RelayCommand]
+    private void OpenModFolder() => Process.Start(new ProcessStartInfo(Path)
+    {
+        UseShellExecute = true,
+    });
+
+    [RelayCommand]
+    private void OpenWorkshopPage() => Process.Start(new ProcessStartInfo(
+        $"https://steamcommunity.com/sharedfiles/filedetails/?id={Id}")
+    {
+        UseShellExecute = true,
+    });
+
+    [RelayCommand]
+    private void CopyModId() => Clipboard.SetText(Id);
 }

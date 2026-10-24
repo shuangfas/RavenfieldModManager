@@ -1,14 +1,7 @@
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Windows;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using ModManagerGUI.Models;
 using ModManagerGUI.Services;
-using ModManagerGUI.Services.Steam;
-using SteamBBCodeParser = ModManagerGUI.Services.Steam.SteamBBCodeParser;
 using SteamServices = ModManagerGUI.Services.Steam.SteamServices;
 
 namespace ModManagerGUI.ViewModels;
@@ -19,8 +12,7 @@ namespace ModManagerGUI.ViewModels;
 /// </summary>
 public partial class ModsViewModel : ObservableObject
 {
-    private readonly CancellationTokenSource _cts = new();
-    private readonly Dictionary<string, ModCardViewModel> _cardsById = [];
+    private readonly ModDetailLoader _detailLoader;
 
     public static readonly IReadOnlyList<string> CONTENT_TYPE_TAGS = [
         "Maps", "Maps - Mod Tools", "Weapons", "Vehicles", "Mutators", "Game Configuration", "Skins",
@@ -34,25 +26,27 @@ public partial class ModsViewModel : ObservableObject
     public ModsViewModel()
     {
         ModsView = (ListCollectionView)CollectionViewSource.GetDefaultView(Mods);
+        _detailLoader = new ModDetailLoader(Mods);
+        _detailLoader.BatchLoaded += RefreshList; // 工坊详情到达后刷新列表
     }
 
     public ObservableCollection<ModCardViewModel> Mods { get; } = [];
 
     public ListCollectionView ModsView { get; }
 
+    /// <summary>右侧详情栏（标题、描述、渲染开关见 ModDetailPanelViewModel）</summary>
+    [ObservableProperty]
+    private ModDetailPanelViewModel _detailPanel = new();
+
     [ObservableProperty]
     private string _searchText = "";
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(DetailTitle), nameof(DetailId))]
-    [NotifyCanExecuteChangedFor(nameof(OpenModFolderCommand))]
-    [NotifyCanExecuteChangedFor(nameof(OpenWorkshopPageCommand))]
-    [NotifyCanExecuteChangedFor(nameof(CopyModIdCommand))]
     private ModCardViewModel? _selectedMod;
 
-    /// <summary>选中项变更时按需从数据库加载描述</summary>
+    /// <summary>选中项变更：同步到详情栏并按需加载描述</summary>
     partial void OnSelectedModChanged(ModCardViewModel? value) =>
-        _ = LoadDetailDescriptionAsync();
+        DetailPanel.SelectedMod = value;
 
     /// <summary>排序下拉选项（顺序对应 SortKeys）</summary>
     [ObservableProperty]
@@ -70,20 +64,6 @@ public partial class ModsViewModel : ObservableObject
             ApplySort();
     }
 
-    // =========================================================
-    // 右侧详情栏文本
-    // =========================================================
-
-    public string DetailId =>
-        SelectedMod is null ? "" : $"ID {SelectedMod.Id}";
-
-    public string DetailTitle =>
-        SelectedMod?.Title ?? L("Right.NoSelection");
-
-    /// <summary>右侧描述文本：选中模组时才从数据库查询（后台尚未获取到时显示加载中）</summary>
-    [ObservableProperty]
-    private string _detailDescription = "";
-
     /// <summary>详情批量加载进行中（初始加载或手动刷新）</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanRefresh))]
@@ -91,48 +71,6 @@ public partial class ModsViewModel : ObservableObject
 
     /// <summary>刷新按钮可用条件：没有正在进行的详情加载</summary>
     public bool CanRefresh => !IsRefreshing;
-
-    /// <summary>设置页开关：右侧详情用 HtmlPanel 渲染（否则退化为纯文本 TextBlock）</summary>
-    [ObservableProperty]
-    private bool _enableHtmlRendering;
-
-    /// <summary>HTML 渲染开关切换后按新格式重新生成右侧描述</summary>
-    partial void OnEnableHtmlRenderingChanged(bool value) =>
-        _ = LoadDetailDescriptionAsync();
-
-    /// <summary>按需从数据库加载选中模组的描述（数据库未命中说明后台还没获取到）</summary>
-    private async Task LoadDetailDescriptionAsync()
-    {
-        if (SelectedMod is not { } mod)
-        {
-            DetailDescription = L("Right.ClickHint");
-            return;
-        }
-
-        DetailDescription = L("Right.Loading");
-        var entry = await Task.Run(() => ModDatabase.Get(mod.Id));
-        if (!ReferenceEquals(SelectedMod, mod))
-            return; // 查询期间选中项已切换
-
-        DetailDescription = entry is null
-            ? L("Right.Loading")
-            : FormatDescription(ModDatabase.ParseData(entry).Description);
-    }
-
-    private string FormatDescription(string? desc) => desc switch {
-        null => L("Right.Loading"),
-        "" => L("Right.NoDescription"),
-        _ when EnableHtmlRendering
-            => "<font color='white'>" + SteamBBCodeParser.ToHtml(desc) + "</font>",
-        _ => StripBbCode(desc),
-    };
-
-    /// <summary>去掉 BBCode 标记（如 [b]、[url=...]），只保留原始文本</summary>
-    private static string StripBbCode(string text) =>
-        BbCodeTagRegex().Replace(text, string.Empty);
-
-    [GeneratedRegex(@"\[/?[a-zA-Z][^\[\]]*(?:=[^\[\]]*)?\]")]
-    private static partial Regex BbCodeTagRegex();
 
     // =========================================================
     // 初始化：模组发现（内容加载见 ModCardViewModel.Load）
@@ -142,7 +80,7 @@ public partial class ModsViewModel : ObservableObject
     public void Initialize()
     {
         SortOptions = [.. SortKeys.Select(L)];
-        EnableHtmlRendering = MainWindow.CommonConfig.Current.EnableHtmlRendering;
+        DetailPanel.EnableHtmlRendering = MainWindow.CommonConfig.Current.EnableHtmlRendering;
 
         var ids = SteamServices.GetWorkshopInfo(SteamServices.RavenfieldAppId);
 
@@ -150,45 +88,18 @@ public partial class ModsViewModel : ObservableObject
         {
             var card = new ModCardViewModel(id);
             Mods.Add(card);
-            _cardsById[id] = card;
         }
 
         // 对应 Python start() 的两个后台线程
-        _ = LoadDetailsAsync(_cts.Token);
+        _ = LoadDetailsAsync();
     }
 
-    private async Task LoadDetailsAsync(CancellationToken ct, bool skipCache = false) {
+    /// <summary>批量加载详情并维护加载状态（加载流程见 ModDetailLoader）</summary>
+    private async Task LoadDetailsAsync(bool skipCache = false)
+    {
         IsRefreshing = true;
         try {
-            var ids = Mods.Select(m => m.Id).ToList();
-            // skipCache = true 时跳过缓存读取，全部 id 保留，走创意工坊接口重新获取
-            if (!skipCache) {
-                foreach (var (id, entry) in await Task.Run(() => ModDatabase.GetMany(ids))) {
-                    if (!ModDatabase.IsStale(entry) && _cardsById.TryGetValue(id, out var card)) {
-                        card.SetWorkshopData(ModDatabase.ParseData(entry));
-                        ids.Remove(id);
-                    }
-                }
-                RefreshList();
-            }
-            foreach (var batch in ids.Chunk(SteamServices.WorkshopDetailBatch)) {
-                Dictionary<string, WorkshopData> details;
-                try {
-                    details = await WorkshopApiService.GetDetailsAsync(batch);
-                }
-                catch {
-                    continue; // 网络失败时跳过该批，卡片保留 id 占位文本
-                }
-                foreach (var id in batch) {
-                    if (!details.TryGetValue(id, out var detail) || !_cardsById.TryGetValue(id, out var card))
-                        continue;
-
-                    card.SetWorkshopData(detail);
-                    // 写入本地缓存：获取时间 = 现在，下次更新时间 = +1 小时
-                    await Task.Run(() => ModDatabase.Save(id, detail));
-                }
-                RefreshList();
-            }
+            await _detailLoader.LoadAsync(skipCache);
         }
         finally {
             IsRefreshing = false;
@@ -199,33 +110,11 @@ public partial class ModsViewModel : ObservableObject
     public void RefreshDetails() {
         if (IsRefreshing)
             return;
-        _ = LoadDetailsAsync(_cts.Token, skipCache: true);
+        _ = LoadDetailsAsync(skipCache: true);
     }
 
     /// <summary>停止后台加载（窗口关闭时调用，对应 Python stop()）</summary>
-    public void Shutdown() => _cts.Cancel();
-
-    // =========================================================
-    // 卡片 "..." 菜单操作
-    // =========================================================
-
-    private bool HasSelection => SelectedMod is not null;
-
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void OpenModFolder() => Process.Start(new ProcessStartInfo(SelectedMod!.Path)
-    {
-        UseShellExecute = true,
-    });
-
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void OpenWorkshopPage() => Process.Start(new ProcessStartInfo(
-        $"https://steamcommunity.com/sharedfiles/filedetails/?id={SelectedMod!.Id}")
-    {
-        UseShellExecute = true,
-    });
-
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void CopyModId() => Clipboard.SetText(SelectedMod!.Id);
+    public void Shutdown() => _detailLoader.Shutdown();
 
     // =========================================================
     // 搜索
@@ -292,14 +181,12 @@ public partial class ModsViewModel : ObservableObject
 
     private static readonly string[] SortKeys = ModSorting.SortKeys;
 
-    private static string L(string key) =>
-        Application.Current.TryFindResource(key) as string ?? key;
+    private static string L(string key) => LocalizationService.L(key);
 
     /// <summary>语言切换后刷新 VM 侧文本（排序选项、详情栏占位文本）</summary>
     public void OnLanguageChanged()
     {
         SortOptions = [.. SortKeys.Select(L)];
-        OnPropertyChanged(nameof(DetailTitle));
-        _ = LoadDetailDescriptionAsync(); // 重新解析占位文本
+        DetailPanel.OnLanguageChanged();
     }
 }

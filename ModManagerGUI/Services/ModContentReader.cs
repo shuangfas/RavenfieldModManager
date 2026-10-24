@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace ModManagerGUI.Services;
 
 public class ModContentReader {
-    private static List<string> findRFC(string path) {
+    private static List<string> FindRFC(string path) {
         var fileList = new List<string>();
         if (Directory.Exists(path)) {
             fileList.AddRange(Directory.GetFiles(path, "*.rfc", SearchOption.AllDirectories));
@@ -15,7 +15,7 @@ public class ModContentReader {
         return fileList;
     }
 
-    private static void load(AssetsManager manager, List<string> fileList) {
+    private static void Load(AssetsManager manager, List<string> fileList) {
         Type type = manager.GetType();
         MethodInfo? load = type.GetMethod(
             "Load",
@@ -24,10 +24,10 @@ public class ModContentReader {
         load?.Invoke(manager, new object[] { fileList.ToArray() });
     }
 
-    public static Dictionary<string, string> read(string path, string[] classNameFilters) {
+    public static Dictionary<string, string> Read(string path, List<string> classNameFilters) {
         AssetsManager manager = new AssetsManager();
         manager.SetAssetFilter(new List<ClassIDType> { ClassIDType.MonoBehaviour });
-        load(manager, findRFC(path));
+        Load(manager, FindRFC(path));
         Dictionary<string, string> result = new Dictionary<string, string>();
         foreach (var file in manager.AssetsFileList) {
             foreach (var obj in file.Objects) {
