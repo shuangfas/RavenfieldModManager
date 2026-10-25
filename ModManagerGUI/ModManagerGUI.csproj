@@ -7,7 +7,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <RuntimeIdentifier>win-x86</RuntimeIdentifier>
         <PreserveCompilationContext>true</PreserveCompilationContext>
         <PreserveCompilationReferences>true</PreserveCompilationReferences>
     </PropertyGroup>
