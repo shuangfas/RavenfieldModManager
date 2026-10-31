@@ -70,16 +70,22 @@ public partial class PlaysetViewModel : ObservableObject {
 
     [RelayCommand(CanExecute = nameof(NotDefaultPlayset))]
     private void RemovePlayset() {
-        SelectedPlaysetItem = DefaultPlaysetName;
         _playsets.Remove(Current);
         Save();
+        // 必须先重建列表再设置选中项：PlaysetItems.Clear() 会让 ComboBox 的 SelectedItem 立即变为 null，
+        // 并通过双向绑定把 null 写回 SelectedPlaysetItem；若先设置默认选中项，会被随后的 null 覆盖。
+        RefreshPlaysetItems();
+        SelectedPlaysetItem = DefaultPlaysetName;
     }
 
     public bool RenamePlayset(string name) {
         if (IsNameInvalid(name)) {
-            Current.Name = name.Trim();
+            var newName = name.Trim();
+            Current.Name = newName;
             Save();
+            // 同 RemovePlayset：先重建列表（旧的选中名已不存在），再选中重命名后的新名称
             RefreshPlaysetItems();
+            SelectedPlaysetItem = newName;
             return true;
         }
         return false;
@@ -90,8 +96,6 @@ public partial class PlaysetViewModel : ObservableObject {
         PlaysetItems.Add(new NewPlaysetActionItem());
         foreach (var playset in _playsets)
             PlaysetItems.Add(playset.Name);
-        if (_playsets.Count > 1)
-            SelectedPlaysetItem ??= _playsets[1].Name;
     }
 
     /// <summary>当前播放集包含的模组 ID（用于弹窗过滤已添加的模组）</summary>
