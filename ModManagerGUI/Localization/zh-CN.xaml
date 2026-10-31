@@ -26,6 +26,7 @@
     <sys:String x:Key="Right.ClickHint">点击左侧模组卡片查看详情</sys:String>
     <sys:String x:Key="Right.Loading">详情加载中…</sys:String>
     <sys:String x:Key="Right.NoDescription">暂无描述</sys:String>
+    <sys:String x:Key="Right.ContentTooLarge">模组内容过大，已停止加载</sys:String>
     <sys:String x:Key="Right.Tab.ModDetail">模组详情</sys:String>
     <sys:String x:Key="Right.Tab.Content">无</sys:String>
     <sys:String x:Key="Right.Playlist">当前播放集模组</sys:String>

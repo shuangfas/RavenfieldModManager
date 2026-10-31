@@ -36,7 +36,7 @@ public partial class ModsViewModel : ObservableObject
 
     /// <summary>右侧详情栏（标题、描述、渲染开关见 ModDetailPanelViewModel）</summary>
     [ObservableProperty]
-    private ModDetailPanelViewModel _detailPanel = new();
+    private ModInformationViewModel _information = new();
 
     [ObservableProperty]
     private string _searchText = "";
@@ -46,7 +46,7 @@ public partial class ModsViewModel : ObservableObject
 
     /// <summary>选中项变更：同步到详情栏并按需加载描述</summary>
     partial void OnSelectedModChanged(ModCardViewModel? value) =>
-        DetailPanel.SelectedMod = value;
+        Information.SelectedMod = value;
 
     /// <summary>排序下拉选项（顺序对应 SortKeys）</summary>
     [ObservableProperty]
@@ -80,9 +80,9 @@ public partial class ModsViewModel : ObservableObject
     public void Initialize()
     {
         SortOptions = [.. SortKeys.Select(L)];
-        DetailPanel.EnableHtmlRendering = MainWindow.CommonConfig.Current.EnableHtmlRendering;
+        Information.EnableHtmlRendering = MainWindow.CommonConfig.Current.EnableHtmlRendering;
 
-        var ids = SteamServices.GetWorkshopInfo(SteamServices.RavenfieldAppId);
+        var ids = SteamServices.GetWorkshopInfo();
 
         foreach (var id in ids.OrderBy(long.Parse))
         {
@@ -187,6 +187,6 @@ public partial class ModsViewModel : ObservableObject
     public void OnLanguageChanged()
     {
         SortOptions = [.. SortKeys.Select(L)];
-        DetailPanel.OnLanguageChanged();
+        Information.OnLanguageChanged();
     }
 }

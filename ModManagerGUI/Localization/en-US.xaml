@@ -25,6 +25,7 @@
     <sys:String x:Key="Right.ClickHint">Click a mod card on the left to view details</sys:String>
     <sys:String x:Key="Right.Loading">Loading details…</sys:String>
     <sys:String x:Key="Right.NoDescription">No description</sys:String>
+    <sys:String x:Key="Right.ContentTooLarge">Mod content is too large; loading stopped</sys:String>
     <sys:String x:Key="Right.Tab.ModDetail">Mod details</sys:String>
     <sys:String x:Key="Right.Tab.Content">None</sys:String>
     <sys:String x:Key="Right.Playlist">Current playlist mods</sys:String>

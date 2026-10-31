@@ -23,7 +23,7 @@ public partial class SettingsPage : UserControl {
             MainWindow.CommonConfig.Update(p =>p.EnableHtmlRendering = toggleButton.IsChecked == true);
             // 同步到模组页：切换 HtmlPanel / TextBlock 并重新生成描述
             MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.ModsViewModel.DetailPanel.EnableHtmlRendering = MainWindow.CommonConfig.Current.EnableHtmlRendering;
+            mainWindow.ModsViewModel.Information.EnableHtmlRendering = MainWindow.CommonConfig.Current.EnableHtmlRendering;
         }
     }
 }

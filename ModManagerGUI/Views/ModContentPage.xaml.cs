@@ -3,7 +3,7 @@ using System.Windows.Controls;
 namespace ModManagerGUI.Views;
 
 /// <summary>
-/// 模组详情占位页（None）：待后续填充实际内容
+/// 模组内容页：以 TreeView 展示选中模组的 .rfc 内容树
 /// </summary>
 public partial class ModContentPage : Page
 {

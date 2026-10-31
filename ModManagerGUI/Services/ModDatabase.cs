@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace ModManagerGUI.Services;
 
 /// <summary>
-/// 模组工坊数据本地缓存数据库（data/mods.db）
+/// 模组数据本地缓存数据库（data/mods.db）：工坊元数据与内容树缓存
 /// </summary>
 public static class ModDatabase
 {
@@ -34,6 +34,19 @@ public static class ModDatabase
         DateTime FetchedAt,
         DateTime NextUpdateAt);
 
+    /// <summary>数据库中一条模组内容树缓存记录（按 .rfc 文件粒度）</summary>
+    /// <param name="Id">工坊条目 ID</param>
+    /// <param name="Path">.rfc 文件的相对路径</param>
+    /// <param name="Hash">该文件的指纹（相对路径/大小/修改时间的 SHA-256）</param>
+    /// <param name="Data">该文件内容树（单个节点树的 JSON）</param>
+    /// <param name="UpdatedAt">写入缓存的时间（UTC）</param>
+    public sealed record ContentFileEntry(
+        string Id,
+        string Path,
+        string Hash,
+        string Data,
+        DateTime UpdatedAt);
+
     static ModDatabase()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(DbPath)!);
@@ -46,6 +59,16 @@ public static class ModDatabase
                 fetched_at     TEXT NOT NULL,
                 next_update_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS content_file_cache (
+                mod_id     INTEGER NOT NULL,
+                path       TEXT NOT NULL,
+                hash       TEXT NOT NULL,
+                data       TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                PRIMARY KEY (mod_id, path)
+            );
+            -- 旧版按模组整体缓存内容树的表已废弃
+            DROP TABLE IF EXISTS content_tree;
             """;
         cmd.ExecuteNonQuery();
     }
@@ -142,6 +165,78 @@ public static class ModDatabase
             result[entry.Id] = entry;
         }
         return result;
+    }
+
+    /// <summary>保存（或覆盖）单个 .rfc 文件的内容树缓存，updated_at 为当前时间</summary>
+    public static void SaveContentFile(string id, string path, string hash, string data)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO content_file_cache (mod_id, path, hash, data, updated_at)
+            VALUES ($id, $path, $hash, $data, $updated_at)
+            ON CONFLICT(mod_id, path) DO UPDATE SET
+                hash = excluded.hash,
+                data = excluded.data,
+                updated_at = excluded.updated_at;
+            """;
+        cmd.Parameters.AddWithValue("$id", long.Parse(id));
+        cmd.Parameters.AddWithValue("$path", path);
+        cmd.Parameters.AddWithValue("$hash", hash);
+        cmd.Parameters.AddWithValue("$data", data);
+        cmd.Parameters.AddWithValue("$updated_at", DateTime.UtcNow.ToString(DateFormat));
+        cmd.ExecuteNonQuery();
+    }
+
+    /// <summary>读取一个模组的全部文件级内容树缓存，返回 {文件相对路径: Entry}；无缓存返回空字典</summary>
+    public static Dictionary<string, ContentFileEntry> GetContentFiles(string id)
+    {
+        var result = new Dictionary<string, ContentFileEntry>(StringComparer.OrdinalIgnoreCase);
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText =
+            "SELECT mod_id, path, hash, data, updated_at FROM content_file_cache WHERE mod_id = $id";
+        cmd.Parameters.AddWithValue("$id", long.Parse(id));
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var entry = new ContentFileEntry(
+                reader.GetInt64(0).ToString(),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                ReadDate(reader, 4));
+            result[entry.Path] = entry;
+        }
+        return result;
+    }
+
+    /// <summary>删除该模组中已不存在（不在 keepPaths 中）的文件缓存</summary>
+    public static void PruneContentFiles(string id, IReadOnlyCollection<string> keepPaths)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        if (keepPaths.Count == 0)
+        {
+            cmd.CommandText = "DELETE FROM content_file_cache WHERE mod_id = $id";
+            cmd.Parameters.AddWithValue("$id", long.Parse(id));
+        }
+        else
+        {
+            var placeholders = new string[keepPaths.Count];
+            var index = 0;
+            foreach (var path in keepPaths)
+            {
+                placeholders[index] = $"$path{index}";
+                cmd.Parameters.AddWithValue($"$path{index}", path);
+                index++;
+            }
+            cmd.CommandText =
+                "DELETE FROM content_file_cache WHERE mod_id = $id " +
+                $"AND path NOT IN ({string.Join(", ", placeholders)})";
+            cmd.Parameters.AddWithValue("$id", long.Parse(id));
+        }
+        cmd.ExecuteNonQuery();
     }
 
     /// <summary>反序列化 Entry.Data 为 WorkshopData</summary>

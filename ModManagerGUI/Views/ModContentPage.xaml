@@ -5,11 +5,46 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
       d:DesignHeight="450" d:DesignWidth="800">
-    <!-- 占位页：后续替换为真正的独立页面 -->
-    <Grid>
-        <TextBlock Text="None"
+    <Page.Resources>
+        <!-- 覆盖主题中悬停/选中用的画刷：TreeViewItem 除展开外不产生任何视觉反馈 -->
+        <SolidColorBrush x:Key="TreeViewItemBackgroundPointerOver" Color="Transparent" />
+        <SolidColorBrush x:Key="TreeViewItemBackgroundSelected" Color="Transparent" />
+        <SolidColorBrush x:Key="TreeViewItemSelectionIndicatorForeground" Color="Transparent" />
+        <Style x:Key="ContentTreeViewItemStyle" TargetType="{x:Type TreeViewItem}"
+               BasedOn="{StaticResource DefaultTreeViewItemStyle}">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="IsTabStop" Value="False" />
+        </Style>
+    </Page.Resources>
+    <Grid Margin="0,25,0,0">
+        <TreeView ItemsSource="{Binding ContentNodes}"
+                  ItemContainerStyle="{StaticResource ContentTreeViewItemStyle}"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding ChildNodes}">
+                    <TextBlock Text="{Binding Text}"
+                               TextTrimming="CharacterEllipsis" />
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+        <!-- 加载提示：ContentHint 非空时显示（如模组内容过大而停止加载） -->
+        <TextBlock Text="{Binding ContentHint}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
-                   Opacity="0.5" />
+                   TextWrapping="Wrap"
+                   Margin="24"
+                   Opacity="0.7">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ContentHint}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
     </Grid>
 </Page>

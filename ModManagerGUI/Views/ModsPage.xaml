@@ -236,6 +236,7 @@
                                    IsPaneToggleVisible="False"
                                    Transition="SlideRight"
                                    Navigating="DetailNavigation_Navigating"
+                                   Navigated="DetailNavigation_Navigated"
                                    Background="Transparent"
                                    Margin="0,-10,0,0"
                                    DockPanel.Dock="Left">

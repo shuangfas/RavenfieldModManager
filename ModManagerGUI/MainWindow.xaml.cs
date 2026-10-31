@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using ModManagerGUI.Base;
 using ModManagerGUI.Models;

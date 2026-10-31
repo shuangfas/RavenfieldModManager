@@ -18,7 +18,7 @@ public partial class ModsPage : UserControl {
     /// <summary>首次加载时导航到详情描述页（NavigationView 不会自动选中第一项；内部 Frame 是继承边界，需显式传入 DataContext）</summary>
     private void OnPageLoaded(object sender, RoutedEventArgs e) {
         if (DataContext is ModsViewModel vm)
-            DetailNavigation.Navigate(typeof(ModDetailPage), vm.DetailPanel);
+            DetailNavigation.Navigate(typeof(ModDetailPage), vm.Information);
     }
 
     /// <summary>按目标页设置切换动画：详情页从右侧滑入，内容页从左侧滑入（Transition 在导航完成后才读取，此处提前改即可生效）</summary>
@@ -27,6 +27,13 @@ public partial class ModsPage : UserControl {
         sender.Transition = args.Page is ModContentPage
             ? Wpf.Ui.Animations.Transition.SlideLeft
             : Wpf.Ui.Animations.Transition.SlideRight;
+    }
+
+    /// <summary>导航完成后显式给详情页/内容页传入详情栏 ViewModel（菜单点击导航不会传 DataContext）</summary>
+    private void DetailNavigation_Navigated(Wpf.Ui.Controls.NavigationView sender,
+        Wpf.Ui.Controls.NavigatedEventArgs args) {
+        if (DataContext is ModsViewModel vm && args.Page is FrameworkElement page)
+            page.DataContext = vm.Information;
     }
 
     /// <summary>打开 "..." 下拉菜单（对应 Python show_detail_menu 的 RoundMenu）</summary>
