@@ -7,20 +7,18 @@ namespace ModManagerGUI.Services.Steam;
 
 public partial class SteamServices {
     public const string RavenfieldAppId = "636480";
-    
+
     public const int WorkshopDetailBatch = 50;
     public static string WorkshopPath { get; private set; }
-    
-    public static string? GetSteamPath()
-    {
+
+    public static string? GetSteamPath() {
         using var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
         if (key?.GetValue("SteamPath") is not string steamPath)
             return null;
         return Path.GetFullPath(steamPath);
     }
 
-    public static List<string> GetAllLibraryPaths()
-    {
+    public static List<string> GetAllLibraryPaths() {
         var steamPath = GetSteamPath();
         if (steamPath is null)
             return [];
@@ -36,12 +34,10 @@ public partial class SteamServices {
 
         return paths.Count > 0 ? paths : [steamPath];
     }
-    
-    public static string GetGameInstallPath(string appId)
-    {
-        var manifestFilename = $"appmanifest_{appId}.acf";
-        foreach (var libPath in GetAllLibraryPaths())
-        {
+
+    public static string GetGameInstallPath() {
+        var manifestFilename = $"appmanifest_{RavenfieldAppId}.acf";
+        foreach (var libPath in GetAllLibraryPaths()) {
             var manifestPath = Path.Combine(libPath, "steamapps", manifestFilename);
             if (!File.Exists(manifestPath))
                 continue;
@@ -50,14 +46,13 @@ public partial class SteamServices {
             if (match.Success)
                 return Path.Combine(libPath, "steamapps", "common", match.Groups[1].Value);
         }
+
         throw new UnavailableException("Couldn't find game installation path");
     }
 
-    public static List<string> GetWorkshopInfo(string appId)
-    {
-        foreach (var libPath in GetAllLibraryPaths())
-        {
-            var workshopPath = Path.Combine(libPath, "steamapps", "workshop", "content", appId);
+    public static List<string> GetWorkshopInfo() {
+        foreach (var libPath in GetAllLibraryPaths()) {
+            var workshopPath = Path.Combine(libPath, "steamapps", "workshop", "content", RavenfieldAppId);
             if (!Directory.Exists(workshopPath))
                 continue;
             WorkshopPath = workshopPath;
@@ -66,6 +61,7 @@ public partial class SteamServices {
                     .Select(d => Path.GetFileName(d))
             ];
         }
+
         throw new UnavailableException("Couldn't find Workshop path");
     }
 
