@@ -1,4 +1,5 @@
 using Ardalis.SmartEnum;
+using ModManagerGUI.Models.Interfaces;
 
 namespace ModManagerGUI.Models;
 //todo 合并一下SmartEnum<ContentType, string>,ITranslatableKey,ISerializableData

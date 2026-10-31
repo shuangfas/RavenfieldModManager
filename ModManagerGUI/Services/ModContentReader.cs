@@ -3,8 +3,8 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using AssetStudio;
-using ModManagerGUI.Base;
 using ModManagerGUI.Models;
+using ModManagerGUI.Models.Exceptions;
 using ModManagerGUI.ViewModels;
 
 namespace ModManagerGUI.Services;

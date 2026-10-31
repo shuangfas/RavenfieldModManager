@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.IO;
-using ModManagerGUI.Base;
 using ModManagerGUI.Models;
+using ModManagerGUI.Models.Exceptions;
 using ModManagerGUI.Services;
 using ModManagerGUI.ViewModels;
 using ModManagerGUI.Views;

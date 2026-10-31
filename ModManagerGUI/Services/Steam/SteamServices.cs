@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
-using ModManagerGUI.Base;
+using ModManagerGUI.Models.Exceptions;
 
 namespace ModManagerGUI.Services.Steam;
 

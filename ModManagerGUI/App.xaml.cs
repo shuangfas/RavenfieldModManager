@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Threading;
-using ModManagerGUI.Base;
+using ModManagerGUI.Models.Exceptions;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace ModManagerGUI;

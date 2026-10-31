@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using ModManagerGUI.Models.Interfaces;
 
 namespace ModManagerGUI.Models;
 

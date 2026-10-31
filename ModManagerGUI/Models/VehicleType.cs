@@ -1,4 +1,5 @@
 using Ardalis.SmartEnum;
+using ModManagerGUI.Models.Interfaces;
 
 namespace ModManagerGUI.Models;
 

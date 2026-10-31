@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
-using ModManagerGUI.Base;
 using ModManagerGUI.Models;
+using ModManagerGUI.Models.Exceptions;
 using ModManagerGUI.Services;
 using SteamBBCodeParser = ModManagerGUI.Services.Steam.SteamBBCodeParser;
 

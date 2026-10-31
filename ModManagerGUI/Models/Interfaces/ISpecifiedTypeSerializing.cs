@@ -1,4 +1,4 @@
-namespace ModManagerGUI.Models;
+namespace ModManagerGUI.Models.Interfaces;
 
 /// <summary>序列化时带具体类型标记的值对象（内容树缓存用）</summary>
 public interface ISpecifiedTypeSerializing {

@@ -1,4 +1,4 @@
-﻿namespace ModManagerGUI.Base;
+﻿namespace ModManagerGUI.Models.Exceptions;
 
 public class UnavailableException:ApplicationException {
     public UnavailableException() { }
